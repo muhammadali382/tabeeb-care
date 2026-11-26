@@ -3,7 +3,7 @@ import groq, { GROQ_MODEL } from "@/lib/groq";
 import { DOCTOR_REPORT_SYSTEM_PROMPT } from "@/lib/prompts/report_prompt";
 import { retrieveDetailedContext } from "@/lib/rag/retriever";
 import { getDb } from "@/lib/db";
-import { DEMO_USER, getSessionFromRequest } from "@/lib/auth";
+import { getSessionFromRequest } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate_limit";
 
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
@@ -24,30 +24,24 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      userId,
       intakeAnswers,
       messages,
       labReportSummary,
     }: {
-      userId?: number | string;
       intakeAnswers?: IntakeQA[];
       messages?: ChatMsg[];
       labReportSummary?: string | null;
     } = body;
 
     const session = getSessionFromRequest(req);
-    const isDemoUser =
-      Boolean(session?.isDemo) ||
-      session?.sub === DEMO_USER.id ||
-      (!session && String(userId) === String(DEMO_USER.id));
-    const effectiveUserId = session && !isDemoUser ? session.sub : null;
-
-    if (!session && !isDemoUser) {
+    if (!session) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
       );
     }
+
+    const effectiveUserId = session.sub;
 
     // Rate limit AI report generation
     const ip = getClientIp(req);
@@ -113,13 +107,7 @@ export async function POST(req: NextRequest) {
     let profileText = "No recorded health profile.";
     let activeUserId: number | null = null;
 
-    if (isDemoUser) {
-      profileText = `Name: Ahmad Khan (احمد خان)
-Age: 54 | Gender: Male
-Chronic Conditions: Type 2 Diabetes, Hypertension
-Known Allergies: Sulfa, Penicillin
-Current Medications: Metformin 500mg, Amlodipine 5mg`;
-    } else if (effectiveUserId) {
+    if (effectiveUserId) {
       try {
         const db = await getDb();
         const result = await db.execute({

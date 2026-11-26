@@ -7,7 +7,6 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  isDemo?: boolean;
 }
 
 export interface HealthProfile {

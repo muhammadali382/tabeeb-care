@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { HeartPulse, Sparkles, LogIn, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { HeartPulse, LogIn, AlertCircle, Eye, EyeOff } from "lucide-react";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, isLoading: isAuthLoading, login, lang } = useUser();
   const isUrdu = lang === "ur";
 
@@ -19,35 +18,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDemoLoading, setIsDemoLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const demoTriggeredRef = useRef(false);
-
-  const handleDemoLogin = useCallback(async () => {
-    setIsDemoLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/auth/demo", {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok && data.user) {
-        login(data.user, data.profile);
-        router.replace("/dashboard");
-      } else {
-        setError(data.error || "Failed to initialize demo login");
-      }
-    } catch {
-      setError(
-        isUrdu
-          ? "ڈیمو لاگ ان میں نیٹ ورک کا مسئلہ پیش آیا"
-          : "Network error while logging in as demo user"
-      );
-    } finally {
-      setIsDemoLoading(false);
-    }
-  }, [isUrdu, login, router]);
 
   // Redirect already authenticated users to dashboard
   useEffect(() => {
@@ -55,19 +26,6 @@ function LoginForm() {
       router.replace("/dashboard");
     }
   }, [isAuthLoading, user, router]);
-
-  // Check if ?demo=true in URL (guarded against double invocation)
-  useEffect(() => {
-    if (
-      !isAuthLoading &&
-      !user &&
-      searchParams.get("demo") === "true" &&
-      !demoTriggeredRef.current
-    ) {
-      demoTriggeredRef.current = true;
-      handleDemoLogin();
-    }
-  }, [isAuthLoading, user, searchParams, handleDemoLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,50 +102,12 @@ function LoginForm() {
           </CardTitle>
           <CardDescription className="text-xs text-slate-500">
             {isUrdu
-              ? "اپنے اکاؤنٹ یا جج ڈیمو موڈ کے ذریعے لاگ ان کریں"
+              ? "اپنے ذاتی اکاؤنٹ کے ذریعے لاگ ان کریں"
               : "Access your patient profile and clinical triage"}
           </CardDescription>
         </CardHeader>
 
         <CardContent className="p-6 space-y-5">
-          {/* 1-Click Judge Demo Login Button */}
-          <div className="bg-teal-50/80 border border-teal-200 rounded-2xl p-4 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-semibold text-teal-900">
-              <span className="flex items-center gap-1.5 font-bold">
-                <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
-                {isUrdu ? "ہیکاتھون جج / تشخیصی موڈ" : "Hackathon Evaluator / Demo"}
-              </span>
-              <span className="text-[10px] uppercase font-bold bg-teal-200 text-teal-900 px-2 py-0.5 rounded-full">
-                1-Click
-              </span>
-            </div>
-            <p className="text-[11px] text-teal-800 leading-relaxed">
-              {isUrdu
-                ? "احمد خان (54 سالہ، ذیابیطس، ہائی بلڈ پریشر، پینسلین الرجی) کے پہلے سے تیار پروفائل کے ساتھ فوراً شروع کریں۔"
-                : "Instantly login as Ahmad Khan (54yo, Diabetes, Hypertension, Penicillin & Sulfa allergy)."}
-            </p>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={handleDemoLogin}
-              isLoading={isDemoLoading}
-              disabled={isLoading}
-              className="w-full font-bold shadow-xs gap-1.5 bg-teal-600 hover:bg-teal-700"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{isUrdu ? "فوری ڈیمو لاگ ان (احمد خان)" : "Quick Demo Login (Ahmad Khan)"}</span>
-            </Button>
-          </div>
-
-          <div className="relative flex items-center justify-center">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-xs text-slate-400 uppercase font-medium whitespace-nowrap">
-              {isUrdu ? "یا ای میل سے لاگ ان کریں" : "Or standard login"}
-            </span>
-            <div className="border-t border-slate-200 w-full" />
-          </div>
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <Input
@@ -235,14 +155,13 @@ function LoginForm() {
 
             <Button
               type="submit"
-              variant="outline"
+              variant="primary"
               size="md"
               isLoading={isLoading}
-              disabled={isDemoLoading}
-              className="w-full font-bold gap-2"
+              className="w-full font-bold gap-2 bg-teal-600 hover:bg-teal-700"
             >
-              <LogIn className="w-4 h-4 text-teal-600" />
-              <span>{isUrdu ? "لاگ ان کریں" : "Sign In with Credentials"}</span>
+              <LogIn className="w-4 h-4" />
+              <span>{isUrdu ? "لاگ ان کریں" : "Sign In"}</span>
             </Button>
           </form>
 
@@ -255,19 +174,5 @@ function LoginForm() {
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[40vh] text-slate-400 text-sm">
-          Loading login portal...
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
   );
 }

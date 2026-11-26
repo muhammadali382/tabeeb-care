@@ -4,8 +4,6 @@ import { buildSystemPrompt, PatientProfileContext } from "@/lib/memory/context_b
 import { retrieveDetailedContext } from "@/lib/rag/retriever";
 import { DatabaseConfigError, getDb } from "@/lib/db";
 import {
-  DEMO_PROFILE,
-  DEMO_USER,
   getSessionFromRequest,
   parseJsonArray,
 } from "@/lib/auth";
@@ -21,13 +19,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    if (session.isDemo || session.sub === DEMO_USER.id) {
-      return NextResponse.json(
-        { success: true, sessions: [] },
-        { headers: NO_STORE_HEADERS }
       );
     }
 
@@ -85,26 +76,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       messages,
-      userId,
-      profile: clientProfile = null,
       saveSession = false,
       triageLevel = null,
     } = body ?? {};
 
     const session = getSessionFromRequest(req);
-    const isDemoUser =
-      Boolean(session?.isDemo) ||
-      session?.sub === DEMO_USER.id ||
-      (!session && String(userId) === String(DEMO_USER.id));
-    const effectiveUserId = session?.sub ?? null;
-
-    // Require an authenticated session (real or demo)
-    if (!session && !isDemoUser) {
+    if (!session) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
       );
     }
+
+    const effectiveUserId = session.sub;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -142,9 +126,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Handle session saving request for authenticated non-demo users
+    // Handle session saving request for authenticated users
     if (saveSession) {
-      if (effectiveUserId && !isDemoUser) {
+      if (effectiveUserId) {
         const db = await getDb();
         const lastAssistant = [...sanitizedMessages]
           .reverse()
@@ -173,7 +157,7 @@ export async function POST(req: NextRequest) {
         });
       }
       return NextResponse.json(
-        { success: true, saved: Boolean(effectiveUserId && !isDemoUser) },
+        { success: true, saved: Boolean(effectiveUserId) },
         { headers: NO_STORE_HEADERS }
       );
     }
@@ -209,17 +193,7 @@ export async function POST(req: NextRequest) {
 
     // Retrieve patient profile for long-term memory
     let profile: PatientProfileContext | null = null;
-    if (isDemoUser) {
-      profile = {
-        name: DEMO_USER.name,
-        age: clientProfile?.age ?? DEMO_PROFILE.age,
-        gender: clientProfile?.gender ?? DEMO_PROFILE.gender,
-        conditions: clientProfile?.conditions ?? DEMO_PROFILE.conditions,
-        allergies: clientProfile?.allergies ?? DEMO_PROFILE.allergies,
-        current_medications:
-          clientProfile?.current_medications ?? DEMO_PROFILE.current_medications,
-      };
-    } else if (effectiveUserId) {
+    if (effectiveUserId) {
       const db = await getDb();
       const result = await db.execute({
         sql: `

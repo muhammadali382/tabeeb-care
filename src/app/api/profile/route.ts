@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DatabaseConfigError, getDb } from "@/lib/db";
 import {
-  DEMO_PROFILE,
-  DEMO_USER,
   getSessionFromRequest,
   parseJsonArray,
 } from "@/lib/auth";
@@ -12,34 +10,11 @@ const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
 export async function GET(req: NextRequest) {
   try {
     const session = getSessionFromRequest(req);
-    const { searchParams } = new URL(req.url);
-    const requestedUserId = searchParams.get("userId");
 
     if (!session) {
-      if (requestedUserId === String(DEMO_USER.id)) {
-        return NextResponse.json(
-          {
-            success: true,
-            user: DEMO_USER,
-            profile: DEMO_PROFILE,
-          },
-          { headers: NO_STORE_HEADERS }
-        );
-      }
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    if (session.isDemo || session.sub === DEMO_USER.id) {
-      return NextResponse.json(
-        {
-          success: true,
-          user: DEMO_USER,
-          profile: DEMO_PROFILE,
-        },
-        { headers: NO_STORE_HEADERS }
       );
     }
 
@@ -146,16 +121,6 @@ export async function PUT(req: NextRequest) {
       current_medications: medsList,
       updated_at: new Date().toISOString(),
     };
-
-    if (session.isDemo || session.sub === DEMO_USER.id) {
-      return NextResponse.json(
-        {
-          success: true,
-          profile: updatedProfile,
-        },
-        { headers: NO_STORE_HEADERS }
-      );
-    }
 
     const db = await getDb();
 

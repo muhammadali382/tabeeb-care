@@ -56,11 +56,6 @@ export default function DashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {t("dash_greeting")}, {user.name} 👋
             </h1>
-            {user.isDemo && (
-              <span className="text-xs font-bold text-teal-800 bg-teal-100 border border-teal-300 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                {t("badge_demo")}
-              </span>
-            )}
           </div>
           <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
             {t("dash_subtitle")}

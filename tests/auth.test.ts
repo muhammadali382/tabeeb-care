@@ -33,14 +33,12 @@ describe("Authentication, Password Hashing & Session Security", () => {
       id: 42,
       name: "Fatima Ali",
       email: "fatima@example.com",
-      isDemo: false,
     });
 
     const payload = verifySessionToken(token);
     assert.ok(payload);
     assert.equal(payload.sub, 42);
     assert.equal(payload.email, "fatima@example.com");
-    assert.equal(payload.isDemo, false);
 
     // Tamper signature
     const tampered = `${token.slice(0, -4)}AAAA`;

@@ -15,14 +15,12 @@ export interface SessionUser {
   id: number;
   name: string;
   email: string;
-  isDemo?: boolean;
 }
 
 export interface SessionPayload {
   sub: number;
   name: string;
   email: string;
-  isDemo?: boolean;
   iat: number;
   exp: number;
 }
@@ -35,21 +33,6 @@ export interface StoredHealthProfile {
   current_medications: string[];
   updated_at?: string | null;
 }
-
-export const DEMO_USER: SessionUser = {
-  id: 999,
-  name: "Ahmad Khan (احمد خان)",
-  email: "ahmad.demo@tabeebcare.pk",
-  isDemo: true,
-};
-
-export const DEMO_PROFILE: StoredHealthProfile = {
-  age: 54,
-  gender: "Male",
-  conditions: ["Type 2 Diabetes", "Hypertension"],
-  allergies: ["Sulfa", "Penicillin"],
-  current_medications: ["Metformin 500mg", "Amlodipine 5mg"],
-};
 
 function getSessionSecret(): string {
   const configured = process.env.SESSION_SECRET?.trim();
@@ -114,7 +97,6 @@ export function createSessionToken(user: SessionUser): string {
     sub: user.id,
     name: user.name,
     email: user.email,
-    isDemo: Boolean(user.isDemo),
     iat: now,
     exp: now + SESSION_TTL_SECONDS,
   };

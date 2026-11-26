@@ -206,8 +206,8 @@ export default function TriagePage() {
         }
       }
 
-      // Persist completed triage session for authenticated non-demo users
-      if (assistantResponse.trim() && user && !user.isDemo) {
+      // Persist completed triage session for authenticated users
+      if (assistantResponse.trim() && user) {
         const fullThread: Message[] = [
           ...newMessages,
           { role: "assistant", content: assistantResponse },

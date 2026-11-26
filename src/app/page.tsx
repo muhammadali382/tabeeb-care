@@ -96,17 +96,17 @@ export default function HomePage() {
           ) : (
             <>
               <Link
-                href="/login?demo=true"
+                href="/signup"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all active:scale-95"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{t("hero_cta_demo")}</span>
+                <span>{t("hero_cta_signup")}</span>
+                <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/signup"
+                href="/login"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base shadow-2xs transition-colors"
               >
-                <span>{t("hero_cta_signup")}</span>
+                <span>{t("nav_signin")}</span>
               </Link>
             </>
           )}

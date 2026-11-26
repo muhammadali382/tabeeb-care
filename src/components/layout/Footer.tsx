@@ -70,8 +70,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/login?demo=true" className="hover:text-teal-700 font-semibold text-teal-600 transition-colors">
-                    {t("nav_demo")}
+                  <Link href="/login" className="hover:text-teal-700 font-semibold text-teal-600 transition-colors">
+                    {t("nav_signin")}
                   </Link>
                 </li>
               </ul>

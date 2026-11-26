@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { DatabaseConfigError, getDb } from "@/lib/db";
 import {
   clearSessionCookie,
-  DEMO_PROFILE,
-  DEMO_USER,
   getSessionFromRequest,
   parseJsonArray,
   SessionConfigError,
@@ -18,17 +16,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { authenticated: false, user: null, profile: null },
         { status: 401, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    if (session.isDemo || session.sub === DEMO_USER.id) {
-      return NextResponse.json(
-        {
-          authenticated: true,
-          user: DEMO_USER,
-          profile: DEMO_PROFILE,
-        },
-        { headers: NO_STORE_HEADERS }
       );
     }
 

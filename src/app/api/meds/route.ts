@@ -3,8 +3,6 @@ import groq, { GROQ_MODEL } from "@/lib/groq";
 import { MEDS_SYSTEM_PROMPT } from "@/lib/prompts/meds_prompt";
 import { DatabaseConfigError, getDb } from "@/lib/db";
 import {
-  DEMO_PROFILE,
-  DEMO_USER,
   getSessionFromRequest,
   parseJsonArray,
 } from "@/lib/auth";
@@ -19,13 +17,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    if (session.isDemo || session.sub === DEMO_USER.id) {
-      return NextResponse.json(
-        { success: true, checks: [] },
-        { headers: NO_STORE_HEADERS }
       );
     }
 
@@ -79,22 +70,17 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { medications, userId, profile: clientProfile = null } = body ?? {};
+    const { medications } = body ?? {};
 
     const session = getSessionFromRequest(req);
-    const isDemoUser =
-      Boolean(session?.isDemo) ||
-      session?.sub === DEMO_USER.id ||
-      (!session && String(userId) === String(DEMO_USER.id));
-    const effectiveUserId = session?.sub ?? null;
-
-    if (!session && !isDemoUser) {
+    if (!session) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401, headers: NO_STORE_HEADERS }
       );
     }
 
+    const effectiveUserId = session.sub;
     const ip = getClientIp(req);
     const rate = checkRateLimit(`meds:${effectiveUserId ?? ip}`, 15, 5 * 60 * 1000);
     if (!rate.allowed) {
@@ -136,21 +122,7 @@ export async function POST(req: NextRequest) {
     let userContextString = "No specific patient profile provided.";
     let activeUserId: number | null = null;
 
-    if (isDemoUser) {
-      const conditions = parseJsonArray(
-        clientProfile?.conditions ?? DEMO_PROFILE.conditions
-      );
-      const allergies = parseJsonArray(
-        clientProfile?.allergies ?? DEMO_PROFILE.allergies
-      );
-      const currentMeds = parseJsonArray(
-        clientProfile?.current_medications ?? DEMO_PROFILE.current_medications
-      );
-      userContextString = `Patient: ${DEMO_USER.name} (Age ${clientProfile?.age ?? DEMO_PROFILE.age}, ${clientProfile?.gender ?? DEMO_PROFILE.gender}).
-Known Chronic Conditions: ${conditions.join(", ") || "None"}.
-Recorded Allergies: ${allergies.join(", ") || "None"}.
-Current Medications: ${currentMeds.join(", ") || "None"}.`;
-    } else if (effectiveUserId) {
+    if (effectiveUserId) {
       const db = await getDb();
       const result = await db.execute({
         sql: `

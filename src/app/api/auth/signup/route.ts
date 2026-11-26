@@ -58,16 +58,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (cleanEmail === "ahmad.demo@tabeebcare.pk") {
-      return NextResponse.json(
-        {
-          error:
-            "This email is reserved for the demo account. Please use your own email or click Quick Demo Login.",
-        },
-        { status: 400, headers: NO_STORE_HEADERS }
-      );
-    }
-
     if (rawPassword.length < 6 || rawPassword.length > 128) {
       return NextResponse.json(
         { error: "Password must be between 6 and 128 characters long." },

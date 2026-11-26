@@ -10,7 +10,6 @@ import {
   MessageSquareHeart,
   UserCheck,
   LogOut,
-  Sparkles,
   Menu,
   X,
   Globe,
@@ -121,11 +120,6 @@ export function Navbar() {
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="max-w-[120px] truncate">{user.name.split(" ")[0]}</span>
-                {user.isDemo && (
-                  <span className="text-[10px] uppercase font-bold text-teal-700 bg-teal-100 px-1 py-0.2 rounded">
-                    Demo
-                  </span>
-                )}
               </Link>
               <button
                 onClick={handleLogout}
@@ -145,11 +139,10 @@ export function Navbar() {
                   {t("nav_signin")}
                 </Link>
                 <Link
-                  href="/login?demo=true"
+                  href="/signup"
                   className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-teal-600 text-white rounded-lg hover:bg-teal-700 shadow-xs transition-colors"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {t("nav_demo")}
+                  {t("nav_signup")}
                 </Link>
               </div>
             )
@@ -218,12 +211,11 @@ export function Navbar() {
                   {t("nav_signin")}
                 </Link>
                 <Link
-                  href="/login?demo=true"
+                  href="/signup"
                   onClick={closeMobileMenu}
                   className="flex items-center justify-center gap-1 text-center px-3 py-2 rounded-lg text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 shadow-xs"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{t("nav_demo")}</span>
+                  <span>{t("nav_signup")}</span>
                 </Link>
               </div>
             )}
