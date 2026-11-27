@@ -156,7 +156,7 @@ ${userContextString}
 Prescription / Medication Names to Analyze:
 "${cleanMeds}"
 
-Analyze these medications, create a daily morning/afternoon/evening/night dosage schedule, explain their purpose in plain English and Urdu, detail critical food/drink precautions, and flag any conflicts with the patient's recorded allergies or existing conditions.`;
+Analyze these medications, create a daily morning/afternoon/evening/night dosage schedule, explain their purpose in plain English, detail critical food/drink precautions, and flag any conflicts with the patient's recorded allergies or existing conditions.`;
 
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,

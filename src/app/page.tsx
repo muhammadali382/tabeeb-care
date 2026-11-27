@@ -8,243 +8,246 @@ import {
   MessageSquareHeart,
   FileText,
   ArrowRight,
+  ShieldCheck,
   Sparkles,
   CheckCircle2,
-  ShieldCheck,
-  HeartPulse,
   Activity,
-  AlertTriangle,
-  Clock,
-  Users,
+  PhoneCall,
+  FlaskConical,
+  BookOpen,
+  Lock,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/Card";
 
 export default function HomePage() {
-  const { user, lang, t } = useUser();
-  const isUrdu = lang === "ur";
+  const { user } = useUser();
 
-  const coreModules = [
+  const modules = [
     {
-      title: t("module_meds_title"),
-      desc: t("module_meds_desc"),
-      icon: Pill,
+      title: "Medicine Demystifier & OCR",
+      desc: "Type, dictate, or photograph a printed prescription to generate a clear 24-hour dosing schedule (Morning, Afternoon, Evening, Night), meal instructions, and automated drug allergy alerts.",
       href: "/meds",
-      badge: isUrdu ? "24 گھنٹے شیڈول" : "24-Hr Routine",
-      features: [
-        isUrdu ? "الرجی کا فوری خطرہ چیک" : "Automatic Allergy Conflict Alert",
-        isUrdu ? "کھانے کے ساتھ اردو ہدایات" : "Urdu + English Food Instructions",
-        isUrdu ? "صبح، دوپہر، شام، رات کے اوقات" : "Morning/Noon/Night Visual Timing",
-      ],
-      color: "teal",
+      icon: Pill,
+      accent: "bg-teal-50 text-teal-700 border-teal-200",
+      badge: "Allergy Sentinel",
     },
     {
-      title: t("module_triage_title"),
-      desc: t("module_triage_desc"),
+      title: "Clinical Symptom Triage",
+      desc: "Real-time AI symptom evaluation grounded in 15 WHO-inspired primary care protocols. Classifies urgency into Emergency, Urgent, Routine, or Home Care with transparent reasoning.",
+      href: "/triage",
       icon: MessageSquareHeart,
-      href: "/triage",
-      badge: isUrdu ? "ڈبلیو ایچ او پروٹوکول" : "WHO Triage RAG",
-      features: [
-        isUrdu ? "4 سطحی خطرے کا فوری تعین" : "4-Level Urgency Classification",
-        isUrdu ? "1122 ایمرجنسی براہ راست رابطہ" : "Direct 1122 Emergency Escalation",
-        isUrdu ? "اردو اور انگریزی قدرتی گفتگو" : "Bilingual Conversational Intake",
-      ],
-      color: "emerald",
+      accent: "bg-sky-50 text-sky-700 border-sky-200",
+      badge: "RAG Grounded",
     },
     {
-      title: t("module_sbar_title"),
-      desc: t("module_sbar_desc"),
-      icon: FileText,
+      title: "Lab Scanner & SBAR Handover",
+      desc: "Upload lab report photos (CBC, HbA1c, Lipids) for marker breakdowns, complete a 5-question guided intake, and export a structured SBAR summary for your doctor.",
       href: "/triage",
-      badge: isUrdu ? "1-کلک پرنٹ خلاصہ" : "1-Click PDF Ready",
-      features: [
-        isUrdu ? "مریض کی صورتحال اور پس منظر" : "Situation & Background Profiling",
-        isUrdu ? "ڈاکٹر کے معائنے کے لیے رہنما کارڈ" : "Physician-Ready Clinical Summary",
-        isUrdu ? "پرنٹ ایبل فارمیٹ" : "Instant Print & Export",
-      ],
-      color: "sky",
+      icon: FlaskConical,
+      accent: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      badge: "Doctor Ready",
+    },
+  ];
+
+  const steps = [
+    {
+      num: "01",
+      title: "Build Your Health Profile",
+      desc: "Record chronic conditions, known drug allergies, and active prescriptions once in your encrypted patient profile.",
+    },
+    {
+      num: "02",
+      title: "Check Meds or Assess Symptoms",
+      desc: "Scan prescriptions, upload lab reports, or describe symptoms via text or voice to receive protocol-grounded guidance.",
+    },
+    {
+      num: "03",
+      title: "Bring Your SBAR Summary",
+      desc: "Review your consultation history anytime or export a concise 1-page SBAR clinical handover for your physician.",
     },
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24 py-4 sm:py-6">
+    <div className="space-y-14 sm:space-y-20 py-2 sm:py-6">
       {/* Hero Section */}
-      <section className="text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto pt-4 sm:pt-8">
+      <section className="text-center space-y-6 sm:space-y-8 max-w-5xl mx-auto pt-2 sm:pt-6 px-1">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200/90 text-teal-800 text-xs sm:text-sm font-semibold shadow-2xs">
           <Sparkles className="w-4 h-4 text-teal-600 shrink-0" />
-          <span>{t("hero_badge")}</span>
+          <span>UN SDG 3 • AI Health Literacy &amp; Clinical Navigation</span>
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
-            {t("hero_title")}
+          <h1
+            className="font-extrabold text-slate-900 tracking-tight leading-[1.15]"
+            style={{ fontSize: "clamp(1.875rem, 4.5vw, 3.75rem)" }}
+          >
+            Clear Prescriptions.{" "}
+            <span className="text-teal-600">Safer Triage Decisions.</span>
           </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-slate-600 font-normal leading-relaxed max-w-3xl mx-auto">
-            {t("hero_subtitle")}
+          <p className="text-sm sm:text-lg lg:text-xl text-slate-600 font-normal leading-relaxed max-w-3xl mx-auto">
+            TabeebCare helps patients understand complex prescriptions, check for dangerous drug allergies, evaluate symptom urgency using WHO-inspired protocols, and prepare structured SBAR doctor handovers.
           </p>
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
+        <div className="flex flex-col xs:flex-row flex-wrap items-stretch xs:items-center justify-center gap-3 pt-1">
           {user ? (
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 min-h-[48px] rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all"
             >
-              <span>{t("hero_cta_dashboard")}</span>
+              <span>Go to Patient Dashboard</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           ) : (
             <>
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all active:scale-95"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 min-h-[48px] rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm sm:text-base shadow-sm hover:shadow transition-all active:scale-95"
               >
-                <span>{t("hero_cta_signup")}</span>
+                <span>Create Free Account</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base shadow-2xs transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 min-h-[48px] rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base shadow-2xs transition-colors"
               >
-                <span>{t("nav_signin")}</span>
+                <span>Sign In</span>
               </Link>
             </>
           )}
         </div>
 
-        {/* Value Trust Badges */}
+        {/* Value Trust Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 text-xs sm:text-sm font-medium text-slate-600 border-t border-slate-200/70 max-w-3xl mx-auto">
-          <div className="flex items-center justify-center gap-2 p-2">
-            <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-            <span>{t("hero_trust_offline")}</span>
+          <div className="flex items-center justify-center gap-2 p-1.5">
+            <Lock className="w-4 h-4 text-teal-600 shrink-0" />
+            <span>Encrypted Sessions &amp; Private Records</span>
           </div>
-          <div className="flex items-center justify-center gap-2 p-2">
+          <div className="flex items-center justify-center gap-2 p-1.5">
             <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-            <span>{t("hero_trust_who")}</span>
+            <span>15 WHO-Inspired Triage Protocols</span>
           </div>
-          <div className="flex items-center justify-center gap-2 p-2">
+          <div className="flex items-center justify-center gap-2 p-1.5">
             <Activity className="w-4 h-4 text-teal-600 shrink-0" />
-            <span>{t("hero_trust_fast")}</span>
+            <span>Real-Time Streaming &amp; Local OCR</span>
           </div>
         </div>
       </section>
 
-      {/* 3 Core Interactive Modules Grid */}
+      {/* Core Product Modules Grid */}
       <section className="space-y-6">
         <div className="text-center space-y-1.5 max-w-2xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            {t("modules_title")}
+          <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Built for Real Patients &amp; Caregivers
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            {t("modules_subtitle")}
+            Every tool connects directly to your health profile for personalized safety cross-checking.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {coreModules.map((mod, idx) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+          {modules.map((mod, idx) => {
             const Icon = mod.icon;
             return (
-              <Card
+              <Link
                 key={idx}
-                className="hover:border-teal-300 hover:shadow-lg transition-all flex flex-col justify-between group rounded-2xl"
+                href={user ? mod.href : "/signup"}
+                className="group flex flex-col justify-between p-5 sm:p-6 bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all duration-200"
               >
-                <CardContent className="p-6 sm:p-7 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform shadow-xs">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div
+                      className={`w-11 h-11 rounded-xl border flex items-center justify-center shadow-2xs shrink-0 ${mod.accent}`}
+                    >
                       <Icon className="w-6 h-6" />
                     </div>
-                    <span className="text-[11px] font-bold text-teal-800 bg-teal-50/90 border border-teal-200/80 px-2.5 py-1 rounded-full">
+                    <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200/80">
                       {mod.badge}
                     </span>
                   </div>
-
                   <div className="space-y-2">
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
                       {mod.title}
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                       {mod.desc}
                     </p>
                   </div>
-
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    {mod.features.map((feat, fIdx) => (
-                      <div key={fIdx} className="flex items-center gap-2 text-xs text-slate-600">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        <span>{feat}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="pt-4">
-                    <Link
-                      href={mod.href}
-                      className="inline-flex items-center gap-2 text-xs font-bold text-teal-700 group-hover:text-teal-800 group-hover:gap-2.5 transition-all"
-                    >
-                      <span>{t("btn_open")}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="pt-5 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-teal-600 group-hover:gap-2.5 transition-all">
+                  <span>{user ? "Open Module" : "Get Started"}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
             );
           })}
         </div>
       </section>
 
-      {/* How TabeebCare Works: 3-Step Journey */}
-      <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-xs space-y-8">
-        <div className="text-center space-y-2 max-w-xl mx-auto">
-          <span className="text-xs font-extrabold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200/60">
-            {isUrdu ? "مریض کا آسان سفر" : "Simple 3-Step Journey"}
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            {isUrdu ? "طبیب کیئر کیسے کام کرتا ہے؟" : "How TabeebCare Bridges Healthcare"}
-          </h2>
+      {/* How It Works Section */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 lg:p-10 shadow-xs space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="space-y-1">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              How TabeebCare Works
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              From raw prescription or symptom to a clear, doctor-ready action plan in minutes.
+            </p>
+          </div>
+          <Link
+            href="/protocols"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-teal-700 hover:text-teal-800"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Explore Clinical Protocols</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-teal-600 text-white font-extrabold text-sm shadow-2xs">
-              1
-            </span>
-            <h4 className="text-base font-bold text-slate-900">
-              {isUrdu ? "نسخہ یا علامات درج کریں" : "Input Symptoms or Prescription"}
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {isUrdu
-                ? "مریض اردو، انگریزی یا رومن اردو میں اپنی علامات بتائے یا ہاتھ سے لکھا نسخہ درج کرے۔"
-                : "Type handwritten medicine names or converse naturally in Urdu, English, or Roman Urdu."}
-            </p>
-          </div>
+          {steps.map((step) => (
+            <div key={step.num} className="space-y-2.5 p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80">
+              <span className="inline-block text-xs font-extrabold text-teal-700 bg-teal-100/80 px-2.5 py-1 rounded-lg">
+                STEP {step.num}
+              </span>
+              <h3 className="text-base font-bold text-slate-900">{step.title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-teal-600 text-white font-extrabold text-sm shadow-2xs">
-              2
-            </span>
-            <h4 className="text-base font-bold text-slate-900">
-              {isUrdu ? "ڈبلیو ایچ او پروٹوکول پر AI جائزہ" : "WHO Protocol Clinical Evaluation"}
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {isUrdu
-                ? "سسٹم مریض کی الرجی اور بیماریوں کو مدنظر رکھ کر خطرے اور پرہیز کا درست تجزیہ کرتا ہے۔"
-                : "RAG retrieves matched clinical protocols, cross-checks allergies, and classifies triage urgency in under 1 second."}
-            </p>
+      {/* Clinical Safety & Emergency Escalation Banner */}
+      <section className="bg-gradient-to-br from-teal-50/80 via-white to-slate-50 border border-teal-200/80 rounded-3xl p-5 sm:p-8 lg:p-10 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="space-y-2.5 max-w-2xl">
+          <div className="inline-flex items-center gap-2 text-xs font-bold text-teal-800 bg-teal-100/70 px-3 py-1 rounded-full border border-teal-200">
+            <FileText className="w-3.5 h-3.5 text-teal-700" />
+            <span>Safety-First Clinical Architecture</span>
           </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Built-In Guardrails for Emergencies &amp; Drug Conflicts
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Pre-inference safety checks immediately escalate cardiac, stroke, respiratory, or emotional crisis signals with direct one-tap links to Rescue 1122, nearest emergency hospitals, and the Umang Crisis Helpline (0317-4288665).
+          </p>
+        </div>
 
-          <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-teal-600 text-white font-extrabold text-sm shadow-2xs">
-              3
-            </span>
-            <h4 className="text-base font-bold text-slate-900">
-              {isUrdu ? "ڈاکٹر کے لیے ہینڈ اوور کارڈ" : "1-Click Doctor Handover"}
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {isUrdu
-                ? "ڈاکٹر کے معائنے سے پہلے مکمل کلینیکل سمری تیار کریں تاکہ وقت کی بچت اور علاج مؤثر ہو۔"
-                : "Export or print an SBAR clinical card so consulting doctors immediately understand your situation and history."}
-            </p>
-          </div>
+        <div className="flex flex-wrap items-center gap-3 shrink-0 w-full lg:w-auto">
+          <a
+            href="tel:1122"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-colors"
+          >
+            <PhoneCall className="w-4 h-4" />
+            <span>Emergency: Call 1122</span>
+          </a>
+          <Link
+            href={user ? "/triage" : "/signup"}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-colors"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{user ? "Start Assessment" : "Create Account"}</span>
+          </Link>
         </div>
       </section>
     </div>

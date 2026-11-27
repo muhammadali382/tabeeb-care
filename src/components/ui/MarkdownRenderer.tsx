@@ -6,17 +6,14 @@ import clsx from "clsx";
 interface MarkdownRendererProps {
   content: string;
   className?: string;
-  isUrdu?: boolean;
 }
 
-export function MarkdownRenderer({ content, className, isUrdu = false }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   if (!content) return null;
 
-  // Split lines while preserving structure
   const lines = content.split("\n");
 
   const renderFormattedText = (text: string) => {
-    // Replace **bold** with <strong>
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
@@ -24,7 +21,6 @@ export function MarkdownRenderer({ content, className, isUrdu = false }: Markdow
         const isEmergencyHighlight =
           inner.includes("1122") ||
           inner.toLowerCase().includes("emergency") ||
-          inner.includes("ایمرجنسی") ||
           inner.toLowerCase().includes("warning");
 
         return (
@@ -49,7 +45,6 @@ export function MarkdownRenderer({ content, className, isUrdu = false }: Markdow
     <div
       className={clsx(
         "space-y-2 text-sm leading-relaxed break-words font-sans",
-        isUrdu && "leading-loose text-base",
         className
       )}
     >

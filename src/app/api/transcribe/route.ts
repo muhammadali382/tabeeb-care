@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       model: WHISPER_MODEL,
       ...(language ? { language } : {}),
       prompt:
-        "Medical symptoms, Pakistani medicine names like Panadol, Augmentin, Metformin, Glucophage, Urdu and English health consultation.",
+        "Medical symptoms, common medicine names like Panadol, Augmentin, Metformin, Glucophage, and clinical health consultation in English.",
       response_format: "json",
       temperature: 0,
     });

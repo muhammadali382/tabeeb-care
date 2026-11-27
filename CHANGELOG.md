@@ -4,6 +4,12 @@ All notable changes to **TabeebCare (طبیب کیئر)** are documented in this
 
 ## [Unreleased — `dev`]
 
+### Product Upgrade & Responsive Architecture (320px–2560px)
+- **English-Only Product UI**: Removed Urdu/RTL UI toggles and `src/lib/i18n/translations.ts`, streamlining all pages, prompts, SBAR handover cards, and OCR summaries into clear, patient-friendly English.
+- **Mobile-First Responsive Redesign**: Added `viewportFit: "cover"`, `env(safe-area-inset-bottom)`, `100dvh` chat sizing, fluid `clamp()` typography, `>= 40–44px` touch targets, and mobile-first chat ordering across `320px–2560px` viewports.
+- **New Product Pages**: Added Consultation & Medication History (`/history`) with search, severity filtering, and `.txt` export; Interactive Clinical Triage Protocols Library (`/protocols`); and dedicated `/privacy` and `/terms` pages.
+- **Removed Blocking Splash Loader**: Deleted `InitialSplashLoader` for instant first-paint navigation.
+
 ### Security & Quality Hardening
 - Enforced server-side signed `HttpOnly` session verification (`getSessionFromRequest`) on `/api/report` and `/api/report-analyze` to prevent unverified `userId` IDOR access.
 - Added sliding-window rate limiting (`checkRateLimit`), `GROQ_API_KEY` guards, `Cache-Control: no-store`, and `10 MB` upload size + MIME/extension validation to `/api/ocr`, `/api/transcribe`, `/api/report`, and `/api/report-analyze`.

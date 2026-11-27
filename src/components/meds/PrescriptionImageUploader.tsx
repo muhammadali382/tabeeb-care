@@ -1,16 +1,14 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Camera, Upload, Sparkles, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { extractTextFromImage } from "@/lib/ocr/client_ocr";
 
 interface PrescriptionImageUploaderProps {
-  isUrdu?: boolean;
   onExtractedText: (text: string) => void;
 }
 
 export function PrescriptionImageUploader({
-  isUrdu = false,
   onExtractedText,
 }: PrescriptionImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,9 +29,7 @@ export function PrescriptionImageUploader({
       const res = await extractTextFromImage(source, (pct) => setProgress(pct));
       if (!res.text) {
         setError(
-          isUrdu
-            ? "تصویر سے دواؤں کے نام واضح نہ پڑھے جا سکے، براہ کرم نیچے لکھیں"
-            : "Could not read clear text from this image. Try a clearer printed photo or type below."
+          "Could not read clear text from this image. Try a clearer printed photo or type below."
         );
       } else {
         onExtractedText(res.text);
@@ -41,11 +37,7 @@ export function PrescriptionImageUploader({
       }
     } catch (err) {
       console.error("Prescription OCR error:", err);
-      setError(
-        isUrdu
-          ? "تصویر اسکین کرنے میں مسئلہ آیا"
-          : "Image OCR failed. Please try another PNG/JPG photo."
-      );
+      setError("Image OCR failed. Please try another PNG/JPG photo.");
     } finally {
       setIsScanning(false);
     }
@@ -63,12 +55,10 @@ export function PrescriptionImageUploader({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-bold text-teal-900">
           <Camera className="w-4 h-4 text-teal-600 shrink-0" />
-          <span>
-            {isUrdu ? "نسخے کی تصویر اسکین کریں (OCR)" : "Scan Printed Prescription Photo (OCR)"}
-          </span>
+          <span>Scan Printed Prescription Photo (OCR)</span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <input
             ref={fileInputRef}
             type="file"
@@ -80,19 +70,19 @@ export function PrescriptionImageUploader({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isScanning}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold shadow-2xs transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-2xs transition-colors disabled:opacity-50"
           >
-            <Upload className="w-3 h-3" />
-            <span>{isUrdu ? "تصویر اپ لوڈ" : "Upload Photo"}</span>
+            <Upload className="w-3.5 h-3.5" />
+            <span>Upload Photo</span>
           </button>
           <button
             type="button"
             onClick={() => void runPrescriptionOcr("/demo-prescription.png", "/demo-prescription.png")}
             disabled={isScanning}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-teal-300 hover:bg-teal-50 text-teal-800 text-[11px] font-bold shadow-2xs transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[38px] rounded-lg bg-white border border-teal-300 hover:bg-teal-50 text-teal-800 text-xs font-bold shadow-2xs transition-colors disabled:opacity-50"
           >
-            <Sparkles className="w-3 h-3 text-teal-600" />
-            <span>{isUrdu ? "نمونہ نسخہ" : "Demo Rx Image"}</span>
+            <FileText className="w-3.5 h-3.5 text-teal-600" />
+            <span>Sample Rx</span>
           </button>
         </div>
       </div>
@@ -102,7 +92,7 @@ export function PrescriptionImageUploader({
           <div className="flex items-center justify-between text-[11px] font-semibold text-teal-800">
             <span className="flex items-center gap-1.5">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
-              {isUrdu ? "تصویر سے ادویات پڑھی جا رہی ہیں..." : "Extracting medicines with local OCR..."}
+              Extracting medicines with local OCR...
             </span>
             <span>{progress}%</span>
           </div>
@@ -116,24 +106,22 @@ export function PrescriptionImageUploader({
       )}
 
       {previewUrl && !isScanning && (
-        <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200">
+        <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-200">
           <img
             src={previewUrl}
             alt="Prescription preview"
             className="w-16 h-12 object-cover rounded-lg border border-slate-200 shrink-0"
           />
-          <div className="text-[11px] flex-1">
+          <div className="text-xs flex-1 min-w-0">
             {scanDone ? (
-              <span className="text-emerald-700 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                {isUrdu
-                  ? "متن نیچے باکس میں شامل کر دیا گیا! اب تجزیہ پر کلک کریں۔"
-                  : "Text extracted into the box below! Review and click Analyze."}
+              <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Text extracted into the box below! Review and click Analyze.</span>
               </span>
             ) : error ? (
-              <span className="text-red-700 font-semibold flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                {error}
+              <span className="text-red-700 font-semibold flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{error}</span>
               </span>
             ) : null}
           </div>

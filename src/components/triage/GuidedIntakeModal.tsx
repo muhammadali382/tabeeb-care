@@ -10,10 +10,10 @@ import {
   Sparkles,
   FileText,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { VoiceButton } from "../ui/VoiceButton";
-import { useUser } from "@/context/UserContext";
 
 export interface IntakeAnswerItem {
   question: string;
@@ -32,47 +32,57 @@ const INTAKE_QUESTIONS = [
   {
     id: "complaint",
     questionEn: "What is your main symptom or health concern right now?",
-    questionUr: "اس وقت آپ کی سب سے بڑی تکلیف یا بنیادی علامت کیا ہے؟",
     placeholderEn: "e.g., Persistent high fever with body aches and headache",
-    placeholderUr: "مثال: دو دن سے تیز بخار، سر درد اور جسم میں شدید درد",
-    quickChipsEn: ["High fever & chills", "Chest tightness / pain", "Severe headache & dizziness", "Stomach pain & vomiting"],
-    quickChipsUr: ["تیز بخار اور سردی", "سینے میں دباؤ / درد", "شدید سر درد اور چکر", "پیٹ درد اور الٹی"],
+    quickChipsEn: [
+      "High fever & chills",
+      "Chest tightness / pain",
+      "Severe headache & dizziness",
+      "Stomach pain & vomiting",
+    ],
   },
   {
     id: "duration",
     questionEn: "When did these symptoms start, and did they begin suddenly or gradually?",
-    questionUr: "یہ علامات کب شروع ہوئیں، اور اچانک شروع ہوئیں یا آہستہ آہستہ؟",
     placeholderEn: "e.g., Started gradually 2 days ago and worsened last night",
-    placeholderUr: "مثال: دو دن پہلے آہستہ آہستہ شروع ہوا اور کل رات بڑھ گیا",
-    quickChipsEn: ["Started today (suddenly)", "2–3 days ago (gradual)", "About 1 week ago", "Recurring for weeks"],
-    quickChipsUr: ["آج اچانک شروع ہوا", "2 سے 3 دن پہلے", "تقریباً ایک ہفتے سے", "کئی ہفتوں سے بار بار"],
+    quickChipsEn: [
+      "Started today (suddenly)",
+      "2–3 days ago (gradual)",
+      "About 1 week ago",
+      "Recurring for weeks",
+    ],
   },
   {
     id: "severity",
     questionEn: "How severe is it (1 to 10), and what makes it better or worse?",
-    questionUr: "تکلیف کی شدت کتنی ہے (1 سے 10 تک) اور کس چیز سے کم یا زیادہ ہوتی ہے؟",
     placeholderEn: "e.g., 7/10, gets worse at night and improves slightly with rest",
-    placeholderUr: "مثال: شدت 7/10 ہے، رات کو بڑھ جاتی ہے اور آرام سے کچھ فرق پڑتا ہے",
-    quickChipsEn: ["Mild (3/10) — manageable", "Moderate (6/10) — worse on exertion", "Severe (8/10) — disturbing sleep", "Gets worse after eating"],
-    quickChipsUr: ["ہلکی (3/10) — قابلِ برداشت", "درمیانی (6/10) — چلنے سے بڑھتی ہے", "شدید (8/10) — نیند متاثر", "کھانے کے بعد بڑھ جاتی ہے"],
+    quickChipsEn: [
+      "Mild (3/10) — manageable",
+      "Moderate (6/10) — worse on exertion",
+      "Severe (8/10) — disturbing sleep",
+      "Gets worse after eating",
+    ],
   },
   {
     id: "associated",
     questionEn: "Are you experiencing any associated symptoms or warning signs?",
-    questionUr: "کیا اس کے ساتھ کوئی اور علامات یا خطرے کی نشانیاں بھی موجود ہیں؟",
     placeholderEn: "e.g., Nausea, weakness, no shortness of breath or skin rash",
-    placeholderUr: "مثال: متلی اور کمزوری ہے، سانس لینے میں دشواری یا خارش نہیں ہے",
-    quickChipsEn: ["Chills, sweating & fatigue", "Nausea / loss of appetite", "Shortness of breath / dizziness", "No other warning signs"],
-    quickChipsUr: ["سردی، پسینہ اور کمزوری", "متلی اور بھوک کی کمی", "سانس پھولنا / چکر آنا", "کوئی اور خطرے کی علامت نہیں"],
+    quickChipsEn: [
+      "Chills, sweating & fatigue",
+      "Nausea / loss of appetite",
+      "Shortness of breath / dizziness",
+      "No other warning signs",
+    ],
   },
   {
     id: "meds_taken",
     questionEn: "Have you taken any medicines for this yet, or anything else the doctor should know?",
-    questionUr: "کیا آپ نے اس کے لیے کوئی دوا لی ہے یا ڈاکٹر کو کچھ اور بتانا چاہتے ہیں؟",
-    placeholderEn: "e.g., Took Panadol 500mg twice; blood sugar was 186 mg/dL this morning",
-    placeholderUr: "مثال: پیناڈول 500mg دو بار لی؛ صبح شوگر 186 mg/dL تھی",
-    quickChipsEn: ["Took Panadol 500mg only", "No medicines taken yet", "Blood pressure was high today", "Attached lab report values"],
-    quickChipsUr: ["صرف پیناڈول 500mg لی ہے", "ابھی تک کوئی دوا نہیں لی", "آج بلڈ پریشر زیادہ تھا", "لیب رپورٹ منسلک کی ہے"],
+    placeholderEn: "e.g., Took acetaminophen 500mg twice; blood sugar was 186 mg/dL this morning",
+    quickChipsEn: [
+      "Took acetaminophen 500mg",
+      "No medicines taken yet",
+      "Blood pressure was high today",
+      "Attached lab report values",
+    ],
   },
 ];
 
@@ -83,9 +93,6 @@ export function GuidedIntakeModal({
   isGenerating = false,
   hasAttachedLabReport = false,
 }: GuidedIntakeModalProps) {
-  const { lang } = useUser();
-  const isUrdu = lang === "ur";
-
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>(["", "", "", "", ""]);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -117,11 +124,7 @@ export function GuidedIntakeModal({
 
   const handleNext = () => {
     if (!answers[step].trim()) {
-      setLocalError(
-        isUrdu
-          ? "براہ کرم آگے بڑھنے کے لیے اس سوال کا جواب دیں"
-          : "Please answer this question before continuing"
-      );
+      setLocalError("Please answer this question before continuing.");
       return;
     }
     setLocalError(null);
@@ -132,11 +135,7 @@ export function GuidedIntakeModal({
 
   const handleGenerate = async () => {
     if (answeredCount < 3) {
-      setLocalError(
-        isUrdu
-          ? "مکمل ڈاکٹر رپورٹ کے لیے کم از کم 3 سوالات کے جوابات ضروری ہیں"
-          : "Please answer at least 3 questions to generate a comprehensive doctor report"
-      );
+      setLocalError("Please answer at least 3 questions to generate a comprehensive doctor report.");
       return;
     }
     setLocalError(null);
@@ -156,30 +155,26 @@ export function GuidedIntakeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+        <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs shrink-0">
               <ClipboardList className="w-5 h-5" />
             </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">
-                {isUrdu
-                  ? "ڈاکٹر رپورٹ انٹیک (5 سوالات)"
-                  : "Guided Doctor Report Intake (5 Questions)"}
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">
+                Guided Doctor Report Intake (5 Questions)
               </h3>
-              <p className="text-xs text-slate-500">
-                {isUrdu
-                  ? "متعدد سوالات کے جوابات دیں تاکہ مکمل SBAR ڈاکٹر رپورٹ تیار ہو سکے"
-                  : "Answer multiple clinical questions to synthesize one complete SBAR doctor handover report"}
+              <p className="text-xs text-slate-500 truncate">
+                Answer 3–5 clinical questions to synthesize a structured SBAR summary
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            disabled={isGenerating}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
+            className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors shrink-0"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -187,17 +182,13 @@ export function GuidedIntakeModal({
         </div>
 
         {/* Progress Bar & Step Indicators */}
-        <div className="px-5 pt-4 pb-2 bg-white space-y-2">
+        <div className="px-4 sm:px-6 pt-4 pb-2 space-y-2.5 shrink-0">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
             <span>
-              {isUrdu
-                ? `سوال ${step + 1} از ${INTAKE_QUESTIONS.length}`
-                : `Question ${step + 1} of ${INTAKE_QUESTIONS.length}`}
+              Question {step + 1} of {INTAKE_QUESTIONS.length}
             </span>
-            <span className="text-teal-700">
-              {isUrdu
-                ? `${answeredCount} جوابات مکمل`
-                : `${answeredCount}/${INTAKE_QUESTIONS.length} answered`}
+            <span className="text-teal-700 font-bold">
+              {answeredCount}/{INTAKE_QUESTIONS.length} Answered
             </span>
           </div>
           <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -206,24 +197,25 @@ export function GuidedIntakeModal({
               style={{ width: `${progressPct}%` }}
             />
           </div>
-          <div className="flex items-center justify-between gap-1.5 pt-1">
+          <div className="flex items-center gap-1.5 pt-1">
             {INTAKE_QUESTIONS.map((q, idx) => {
-              const filled = answers[idx].trim().length > 0;
+              const isDone = answers[idx].trim().length > 0;
+              const isCurrent = idx === step;
               return (
                 <button
                   key={q.id}
                   type="button"
                   onClick={() => setStep(idx)}
-                  disabled={isGenerating}
-                  className={`flex-1 py-1 rounded-lg text-[11px] font-bold border transition-colors ${
-                    idx === step
-                      ? "bg-teal-600 text-white border-teal-600"
-                      : filled
+                  className={`flex-1 py-1.5 min-h-[34px] rounded-lg text-[11px] font-bold border transition-all flex items-center justify-center gap-1 ${
+                    isCurrent
+                      ? "bg-teal-600 text-white border-teal-600 shadow-2xs"
+                      : isDone
                       ? "bg-teal-50 text-teal-800 border-teal-200"
-                      : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
+                      : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  Q{idx + 1} {filled ? "✓" : ""}
+                  {isDone && !isCurrent && <CheckCircle2 className="w-3 h-3 text-teal-600" />}
+                  <span>Q{idx + 1}</span>
                 </button>
               );
             })}
@@ -231,134 +223,130 @@ export function GuidedIntakeModal({
         </div>
 
         {/* Question Body */}
-        <div
-          dir={isUrdu ? "rtl" : "ltr"}
-          className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1"
-        >
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {hasAttachedLabReport && (
-            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2 font-semibold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>
-                {isUrdu
-                  ? "آپ کی اپ لوڈ کردہ لیب رپورٹ اس ڈاکٹر رپورٹ میں خودکار طور پر شامل ہوگی۔"
-                  : "Your uploaded lab report findings will automatically be included in this doctor report."}
-              </span>
+            <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center gap-2 font-medium">
+              <FileText className="w-4 h-4 text-sky-600 shrink-0" />
+              <span>Lab report findings will be automatically included in your SBAR report.</span>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-sm sm:text-base font-extrabold text-slate-900 block leading-snug">
-              {isUrdu ? currentQ.questionUr : currentQ.questionEn}
+            <label className="text-sm sm:text-base font-bold text-slate-900 block leading-snug">
+              {currentQ.questionEn}
             </label>
-            <p className="text-xs text-slate-500">
-              {isUrdu ? currentQ.questionEn : currentQ.questionUr}
-            </p>
           </div>
 
-          {/* Quick-Fill Chips */}
-          <div className="flex flex-wrap gap-2">
-            {(isUrdu ? currentQ.quickChipsUr : currentQ.quickChipsEn).map(
-              (chip, idx) => (
+          {/* Quick-Select Chips */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Quick Responses (Tap to Add)
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {currentQ.quickChipsEn.map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => appendChip(chip)}
-                  disabled={isGenerating}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 text-xs font-medium text-slate-700 hover:text-teal-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 transition-colors"
                 >
                   <Sparkles className="w-3 h-3 text-teal-600 shrink-0" />
                   <span>{chip}</span>
                 </button>
-              )
-            )}
+              ))}
+            </div>
           </div>
 
-          {/* Textarea + Voice Button */}
+          {/* Answer Input + Voice Dictation */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">
-                {isUrdu ? "لکھیں یا مائیک سے بولیں" : "Type or dictate your answer"}
-              </span>
+              <span className="text-xs font-semibold text-slate-600">Your Answer</span>
               <VoiceButton
                 onTranscript={(spoken) => {
-                  updateCurrentAnswer(
-                    answers[step].trim()
-                      ? `${answers[step].trim()} ${spoken}`
-                      : spoken
-                  );
+                  const existing = answers[step].trim();
+                  updateCurrentAnswer(existing ? `${existing} ${spoken}` : spoken);
                 }}
-                defaultLang={isUrdu ? "ur-PK" : "en-US"}
               />
             </div>
             <textarea
               rows={3}
               value={answers[step]}
               onChange={(e) => updateCurrentAnswer(e.target.value)}
-              disabled={isGenerating}
-              placeholder={isUrdu ? currentQ.placeholderUr : currentQ.placeholderEn}
-              className="w-full rounded-xl border border-slate-200 p-3.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-colors"
+              placeholder={currentQ.placeholderEn}
+              className="w-full rounded-xl border border-slate-200 p-3.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600"
             />
           </div>
 
           {localError && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold">
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">
               {localError}
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
+        {/* Footer Controls */}
+        <div className="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setStep(Math.max(0, step - 1))}
-              disabled={step === 0 || isGenerating}
-              className="gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>{isUrdu ? "پیچھے" : "Back"}</span>
-            </Button>
-            <button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={handleReset}
               disabled={isGenerating}
-              className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 font-medium"
+              className="gap-1 text-xs min-h-[40px]"
             >
-              {isUrdu ? "صاف کریں" : "Clear"}
-            </button>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset</span>
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
-            {step < INTAKE_QUESTIONS.length - 1 ? (
+            {step > 0 && (
               <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setStep(step - 1)}
+                disabled={isGenerating}
+                className="gap-1 min-h-[40px]"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </Button>
+            )}
+
+            {step < INTAKE_QUESTIONS.length - 1 && (
+              <Button
+                type="button"
                 variant="primary"
                 size="sm"
                 onClick={handleNext}
                 disabled={isGenerating}
-                className="gap-1.5"
+                className="gap-1 min-h-[40px]"
               >
-                <span>{isUrdu ? "اگلا سوال" : "Next Question"}</span>
+                <span>Next</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
-            ) : (
+            )}
+
+            {(step === INTAKE_QUESTIONS.length - 1 || answeredCount >= 3) && (
               <Button
+                type="button"
                 variant="primary"
                 size="sm"
                 onClick={handleGenerate}
                 disabled={isGenerating || answeredCount < 3}
-                className="gap-1.5 shadow-sm"
+                className="gap-1.5 min-h-[40px] bg-teal-700 hover:bg-teal-800 shadow-sm"
               >
                 {isGenerating ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>{isUrdu ? "رپورٹ تیار ہو رہی ہے..." : "Generating Report..."}</span>
+                    <span>Generating SBAR...</span>
                   </>
                 ) : (
                   <>
                     <FileText className="w-4 h-4" />
-                    <span>{isUrdu ? "مکمل ڈاکٹر رپورٹ بنائیں" : "Generate Full Doctor Report"}</span>
+                    <span>Generate Doctor Report</span>
                   </>
                 )}
               </Button>

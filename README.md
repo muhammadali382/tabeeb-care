@@ -36,9 +36,9 @@
 
 ## 1. Project Overview
 
-**TabeebCare (طبیب کیئر)** is a bilingual, culturally-attuned AI health literacy, prescription demystifier, and clinical symptom triage platform built for Pakistani patients in alignment with **United Nations Sustainable Development Goal 3 (Good Health and Well-Being)**.
+**TabeebCare** is an AI health literacy, prescription demystifier, and clinical symptom triage platform built in alignment with **United Nations Sustainable Development Goal 3 (Good Health and Well-Being)**.
 
-The application translates complex prescriptions and lab reports into plain **English** and **Urdu (اردو)**, stratifies acute symptoms into clinical urgency tiers grounded in 15 WHO-inspired primary care protocols, supports voice input and audio readout for low-literacy users, and synthesizes multi-question patient intake into structured **SBAR** doctor handover reports.
+The application translates complex prescriptions and lab reports into plain **English**, stratifies acute symptoms into clinical urgency tiers grounded in 15 WHO-inspired primary care protocols, supports voice input and audio readout, provides a searchable consultation & medication history (`/history`) and clinical protocols library (`/protocols`), and synthesizes multi-question patient intake into structured **SBAR** doctor handover reports.
 
 ### Intended Users
 - **Patients & Families**: Outpatients managing multi-drug prescriptions, lab results, chronic conditions (Diabetes, Hypertension), or acute symptoms.
@@ -96,7 +96,7 @@ TabeebCare addresses four everyday barriers in accessible primary healthcare:
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Frontend** | Next.js 15 (App Router), React 19, TypeScript 5 | Responsive bilingual UI with English LTR & Urdu RTL |
+| **Frontend** | Next.js 15 (App Router), React 19, TypeScript 5 | Mobile-first responsive UI (`320px–2560px`) |
 | **Styling & Icons** | Tailwind CSS 3.4, Lucide React | Accessible light-theme design system (`teal-600`, `slate-50`) |
 | **Backend API** | Next.js Route Handlers (Node.js 22) | 12 REST & SSE endpoints under `src/app/api/*` |
 | **Database** | `@libsql/client` (Local SQLite / Turso libSQL) | Persistent `users`, `health_profiles`, `triage_sessions`, `medication_checks` |

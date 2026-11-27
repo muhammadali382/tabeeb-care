@@ -10,6 +10,11 @@
   --primary-teal-light: #f0fdfa;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
 /* Base Body Typography & Background */
 body {
   background-color: var(--background);
@@ -18,39 +23,7 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Urdu Language Specific Typography & RTL Handling */
-[dir="rtl"],
-.lang-ur,
-.lang-ur body {
-  font-family: "Noto Nastaliq Urdu", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
-  letter-spacing: 0;
-  line-height: 1.8;
-}
-
-/* Fluid responsive app container */
-.app-container {
-  width: 100%;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-@media (min-width: 640px) {
-  .app-container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .app-container {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Custom subtle scrollbars */
@@ -72,7 +45,7 @@ body {
   background: #94a3b8;
 }
 
-/* Responsive Touch Target Minimums */
+/* Responsive Touch Ergonomics */
 button,
 a,
 input,

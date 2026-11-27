@@ -145,7 +145,7 @@ ${formattedIntake}
 
 ${labReportSummary ? `[ATTACHED MEDICAL / LAB REPORT FINDINGS]\n${labReportSummary}\n` : ""}
 ${ragResult.contextText ? `[MATCHED CLINICAL PROTOCOLS]\n${ragResult.contextText}\n` : ""}
-Synthesize ALL patient answers above into a concise, accurate SBAR Doctor Handover Report in strict JSON format (1-2 crisp sentences per field, both English and Urdu).`;
+Synthesize ALL patient answers above into a concise, accurate SBAR Doctor Handover Report in strict JSON format (1-2 crisp sentences per field in plain English).`;
 
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,

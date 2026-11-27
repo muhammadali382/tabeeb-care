@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { ChatBubble } from "@/components/triage/ChatBubble";
@@ -30,6 +31,7 @@ import {
   ClipboardList,
   FileImage,
   Loader2,
+  History,
 } from "lucide-react";
 
 interface Message {
@@ -39,8 +41,7 @@ interface Message {
 
 export default function TriagePage() {
   const router = useRouter();
-  const { user, profile, isLoading: isUserLoading, lang, t } = useUser();
-  const isUrdu = lang === "ur";
+  const { user, profile, isLoading: isUserLoading } = useUser();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
@@ -49,11 +50,9 @@ export default function TriagePage() {
   const [isMentalHealth, setIsMentalHealth] = useState(false);
   const [isSbarOpen, setIsSbarOpen] = useState(false);
 
-  // Feature 2: Explainability metadata state
   const [retrievalMeta, setRetrievalMeta] = useState<RetrievalMeta | null>(null);
   const [isExplainOpen, setIsExplainOpen] = useState(false);
 
-  // Multi-Question Doctor Report & Lab Image Analyzer state
   const [isGuidedOpen, setIsGuidedOpen] = useState(false);
   const [isReportScannerOpen, setIsReportScannerOpen] = useState(false);
   const [attachedLabSummary, setAttachedLabSummary] = useState<string | null>(null);
@@ -88,24 +87,22 @@ export default function TriagePage() {
     }
   }, [messages, isStreaming, scrollToBottom]);
 
-  // Hackathon clinical scenario prompt chips
   const starterChips = [
     {
-      label: isUrdu ? "سینے میں شدید درد (ایمرجنسی)" : "Crushing Chest Pain & Breathing",
-      value: "I have sudden crushing chest pain radiating to left arm and shortness of breath.",
-      isEmergency: true,
+      label: "Crushing Chest Pain & Breathing",
+      value: "I have sudden crushing chest pain radiating to my left arm and shortness of breath.",
     },
     {
-      label: isUrdu ? "تیز بخار اور سردی (2 دن)" : "Tez Bukhar (2 days)",
-      value: "Mujhe 2 din se tez bukhar hai aur thand lag rahi hai.",
+      label: "High Fever & Chills (2 Days)",
+      value: "I have had a high fever with chills and body aches for the past 2 days.",
     },
     {
-      label: isUrdu ? "بچے کو الٹی اور دست" : "Pediatric Vomiting & Diarrhea",
-      value: "Mere bacha ko 2 din se ulti aur dast ho rahe hain aur wo sust hai.",
+      label: "Pediatric Vomiting & Diarrhea",
+      value: "My 4-year-old child has had vomiting and watery diarrhea for 2 days and looks lethargic.",
     },
     {
-      label: isUrdu ? "ذہنی دباؤ اور پریشانی (امنگ ہیلپ لائن)" : "Severe Emotional Crisis Support",
-      value: "Mujhe bohat shadeed depression aur khauf mehsoos ho raha hai.",
+      label: "Severe Emotional Crisis Support",
+      value: "I am experiencing overwhelming panic, hopelessness, and emotional distress right now.",
     },
   ];
 
@@ -113,7 +110,6 @@ export default function TriagePage() {
     const text = textToSend || inputMessage;
     if (!text.trim() || isStreaming) return;
 
-    // Run client-side safety guardrails immediately
     const guardrailCheck = checkSafetyGuardrails(text);
     if (guardrailCheck.isSelfHarmOrCrisis) {
       setIsMentalHealth(true);
@@ -164,7 +160,6 @@ export default function TriagePage() {
           const chunk = decoder.decode(value, { stream: true });
           rawBuffer += chunk;
 
-          // Parse the first SSE event for retrieval metadata without breaking tokens
           if (!metaCaptured) {
             const metaMatch = rawBuffer.match(/^data:\s*({[\s\S]*?})\n\n/);
             if (metaMatch) {
@@ -183,7 +178,6 @@ export default function TriagePage() {
 
           assistantResponse = rawBuffer;
 
-          // Detect TRIAGE_LEVEL: emergency from stream
           const match = assistantResponse.match(/TRIAGE_LEVEL:\s*(\w+)/i);
           if (match) {
             const lvl = match[1].toLowerCase();
@@ -191,7 +185,6 @@ export default function TriagePage() {
             setCurrentTriageLevel(lvl);
           }
 
-          // Check for mental health guidance in response
           if (
             assistantResponse.toLowerCase().includes("umang") ||
             assistantResponse.includes("0317")
@@ -199,14 +192,12 @@ export default function TriagePage() {
             setIsMentalHealth(true);
           }
 
-          // Update messages only when tokens actually arrive
           if (assistantResponse.trim()) {
             setMessages([...newMessages, { role: "assistant", content: assistantResponse }]);
           }
         }
       }
 
-      // Persist completed triage session for authenticated users
       if (assistantResponse.trim() && user) {
         const fullThread: Message[] = [
           ...newMessages,
@@ -230,22 +221,19 @@ export default function TriagePage() {
         ...prev.filter((m) => m.content.trim().length > 0),
         {
           role: "assistant",
-          content: isUrdu
-            ? "⚠️ نیٹ ورک میں رکاوٹ آئی ہے۔ اگر یہ ہنگامی صورتحال ہے تو براہ کرم فوری طور پر 1122 پر کال کریں۔"
-            : "⚠️ Network connectivity issue. If this is an emergency, please dial 1122 immediately.",
+          content:
+            "⚠️ Network connectivity issue. If this is an emergency, please dial 1122 immediately.",
         },
       ]);
     } finally {
       setIsStreaming(false);
-      // Ensure if the stream completed cleanly with an empty response, provide a safe fallback
       if (!hadError && !assistantResponse.trim()) {
         setMessages((prev) => [
           ...prev.filter((m) => m.content.trim().length > 0),
           {
             role: "assistant",
-            content: isUrdu
-              ? "TRIAGE_LEVEL: emergency\n\nاگر آپ کسی ہنگامی یا شدید ذہنی دباؤ کی صورتحال میں ہیں، تو براہِ کرم فوری طور پر ریسکیو 1122 یا امنگ ہیلپ لائن (0317-4288665) پر رابطہ کریں۔ آپ اکیلے نہیں ہیں۔"
-              : "TRIAGE_LEVEL: emergency\n\nIf you are experiencing a medical or mental health emergency, please immediately call Rescue 1122 or the Umang Helpline at 0317-4288665. You are not alone and help is available.",
+            content:
+              "TRIAGE_LEVEL: emergency\n\nIf you are experiencing a medical or mental health emergency, please immediately call Rescue 1122 or the Umang Helpline at 0317-4288665. You are not alone and help is available.",
           },
         ]);
         setCurrentTriageLevel("emergency");
@@ -284,11 +272,7 @@ export default function TriagePage() {
       setIsSbarOpen(true);
     } catch (err) {
       setReportNotice(
-        err instanceof Error
-          ? err.message
-          : isUrdu
-          ? "ڈاکٹر رپورٹ تیار کرنے میں مسئلہ آیا"
-          : "Could not generate doctor report"
+        err instanceof Error ? err.message : "Could not generate doctor report"
       );
     } finally {
       setIsGeneratingReport(false);
@@ -298,18 +282,14 @@ export default function TriagePage() {
   const handleChatReportClick = async () => {
     setReportNotice(null);
 
-    // If a multi-question structured report was already generated, reopen it directly
     if (structuredReport && userMessageCount < 3) {
       setIsSbarOpen(true);
       return;
     }
 
-    // Enforce multi-question intake (>= 3 answered turns) — never on 1 question only
     if (userMessageCount < 3) {
       setReportNotice(
-        isUrdu
-          ? `مکمل ڈاکٹر رپورٹ کے لیے کم از کم 3 سوالات کے جوابات ضروری ہیں (ابھی ${userMessageCount}/3 مکمل)۔ آپ اوپر "ڈاکٹر رپورٹ (5 سوالات)" بھی استعمال کر سکتے ہیں۔`
-          : `Comprehensive doctor reports require at least 3 answered questions (${userMessageCount}/3 answered so far). Keep chatting or click "Guided Doctor Report (5 Qs)"!`
+        `Comprehensive doctor reports require at least 3 answered questions (${userMessageCount}/3 answered so far). Keep chatting or click "Guided Doctor Report (5 Qs)".`
       );
       return;
     }
@@ -340,11 +320,7 @@ export default function TriagePage() {
       setIsSbarOpen(true);
     } catch (err) {
       setReportNotice(
-        err instanceof Error
-          ? err.message
-          : isUrdu
-          ? "ڈاکٹر رپورٹ تیار نہیں ہو سکی"
-          : "Failed to synthesize doctor report"
+        err instanceof Error ? err.message : "Failed to synthesize doctor report"
       );
     } finally {
       setIsGeneratingReport(false);
@@ -365,10 +341,10 @@ export default function TriagePage() {
 
   if (isUserLoading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-slate-400 text-sm">
+      <div className="flex items-center justify-center min-h-[50dvh] text-slate-400 text-sm">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-teal-600 border-t-transparent rounded-full animate-spin" />
-          <span>{isUrdu ? "ٹریآج سروس لوڈ ہو رہی ہے..." : "Loading triage session..."}</span>
+          <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          <span>Loading triage session...</span>
         </div>
       </div>
     );
@@ -378,31 +354,30 @@ export default function TriagePage() {
     currentTriageLevel === "emergency" || currentTriageLevel === "urgent";
 
   return (
-    <div className="w-full space-y-6 py-2">
+    <div className="w-full space-y-5 sm:space-y-6 py-2">
       <MedicalDisclaimerModal featureKey="triage" />
 
       {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/90 pb-4">
-        <div className="space-y-1">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/90 pb-4">
+        <div className="space-y-1 min-w-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-xs shrink-0">
-              <MessageSquareHeart className="w-6 h-6" />
+              <MessageSquareHeart className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                {t("triage_title")}
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">
+                AI Symptom Triage
               </h1>
               <span className="text-xs text-teal-700 font-semibold flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                WHO-inspired clinical protocol Context • RAG Powered
+                <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                <span>WHO-inspired clinical protocol context</span>
               </span>
             </div>
           </div>
         </div>
 
         {/* Action Header Buttons */}
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
-          {/* Guided Multi-Question Doctor Report Intake */}
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="primary"
             size="sm"
@@ -410,29 +385,20 @@ export default function TriagePage() {
               setReportNotice(null);
               setIsGuidedOpen(true);
             }}
-            className="gap-1.5 text-xs font-bold shadow-xs"
+            className="gap-1.5 text-xs font-bold shadow-xs min-h-[40px]"
           >
-            <ClipboardList className="w-3.5 h-3.5" />
-            <span>{isUrdu ? "ڈاکٹر رپورٹ (5 سوالات)" : "Guided Doctor Report (5 Qs)"}</span>
+            <ClipboardList className="w-3.5 h-3.5 shrink-0" />
+            <span>Guided Doctor Report (5 Qs)</span>
           </Button>
 
-          {/* Upload & Analyze Lab Report Image (OCR) */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsReportScannerOpen(true)}
-            className="gap-1.5 text-xs font-semibold shadow-2xs border-teal-200 text-teal-800 bg-white hover:bg-teal-50"
+            className="gap-1.5 text-xs font-semibold shadow-2xs border-teal-200 text-teal-800 bg-white hover:bg-teal-50 min-h-[40px]"
           >
-            <FileImage className="w-3.5 h-3.5 text-teal-600" />
-            <span>
-              {attachedLabSummary
-                ? isUrdu
-                  ? "لیب رپورٹ منسلک ✓"
-                  : "Lab Report ✓"
-                : isUrdu
-                ? "لیب رپورٹ اپ لوڈ (OCR)"
-                : "Upload Report Image"}
-            </span>
+            <FileImage className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+            <span>{attachedLabSummary ? "Lab Report ✓" : "Upload Report Image"}</span>
           </Button>
 
           {retrievalMeta && (
@@ -440,10 +406,10 @@ export default function TriagePage() {
               variant="outline"
               size="sm"
               onClick={() => setIsExplainOpen(true)}
-              className="gap-1.5 text-xs font-semibold shadow-2xs text-teal-700 bg-teal-50 hover:bg-teal-100 border-teal-200"
+              className="gap-1.5 text-xs font-semibold shadow-2xs text-teal-700 bg-teal-50 hover:bg-teal-100 border-teal-200 min-h-[40px]"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-teal-600" />
-              <span>{isUrdu ? "وجہ جانیں" : "Why this result?"}</span>
+              <HelpCircle className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+              <span>Why this result?</span>
             </Button>
           )}
 
@@ -454,24 +420,18 @@ export default function TriagePage() {
                 size="sm"
                 onClick={() => void handleChatReportClick()}
                 disabled={isGeneratingReport}
-                className="gap-1.5 text-xs font-semibold shadow-2xs"
+                className="gap-1.5 text-xs font-semibold shadow-2xs min-h-[40px]"
               >
                 {isGeneratingReport ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600 shrink-0" />
                 ) : (
-                  <FileText className="w-3.5 h-3.5 text-teal-600" />
+                  <FileText className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                 )}
                 <span>
                   {structuredReport
-                    ? isUrdu
-                      ? "ڈاکٹر کارڈ دیکھیں (SBAR)"
-                      : "View Doctor Report"
+                    ? "View Doctor Report"
                     : userMessageCount >= 3
-                    ? isUrdu
-                      ? "ڈاکٹر رپورٹ بنائیں (SBAR)"
-                      : "Generate SBAR Report"
-                    : isUrdu
-                    ? `رپورٹ (${userMessageCount}/3 سوالات)`
+                    ? "Generate SBAR Report"
                     : `SBAR Report (${userMessageCount}/3 Qs)`}
                 </span>
               </Button>
@@ -480,15 +440,23 @@ export default function TriagePage() {
                   variant="ghost"
                   size="sm"
                   onClick={handleReset}
-                  className="gap-1 text-xs text-slate-500 hover:text-slate-800"
-                  title={t("triage_btn_reset")}
+                  className="gap-1 text-xs text-slate-500 hover:text-slate-800 min-h-[40px]"
+                  title="Reset Consultation"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>{t("triage_btn_reset")}</span>
+                  <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+                  <span>Reset</span>
                 </Button>
               )}
             </>
           )}
+
+          <Link
+            href="/history"
+            className="inline-flex items-center gap-1.5 px-3 min-h-[40px] rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+          >
+            <History className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+            <span>History</span>
+          </Link>
         </div>
       </div>
 
@@ -503,45 +471,45 @@ export default function TriagePage() {
               setReportNotice(null);
               setIsGuidedOpen(true);
             }}
-            className="text-xs gap-1.5"
+            className="text-xs gap-1.5 min-h-[40px]"
           >
             <ClipboardList className="w-3.5 h-3.5" />
-            <span>{isUrdu ? "5 سوالات شروع کریں" : "Start 5-Question Intake"}</span>
+            <span>Start 5-Question Intake</span>
           </Button>
         </div>
       )}
 
-      {/* Full-Width Workspace Layout: Left Sidebar + Right Live Chat */}
+      {/* Workspace Layout: Chat First on Mobile (order-1), Sidebar Second (order-2); Left Sidebar + Right Chat on Desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Clinical Sidebar (4 Columns on Desktop) */}
-        <aside className="lg:col-span-4 space-y-4">
+        {/* Clinical Sidebar */}
+        <aside className="order-2 lg:order-1 lg:col-span-4 space-y-4 min-w-0">
           {/* Active Patient Vitals Card */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-              <div className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-teal-600" />
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-800">
-                  {isUrdu ? "مریض کا ریکارڈ" : "Patient Context"}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <UserCheck className="w-4 h-4 text-teal-600 shrink-0" />
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-800 truncate">
+                  Patient Context
                 </span>
               </div>
-              <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60">
+              <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200/60 shrink-0">
                 Profile Synced
               </span>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between items-center py-1 border-b border-slate-50">
-                <span className="text-slate-400">{isUrdu ? "مریض" : "Name"}</span>
-                <strong className="text-slate-800">{user.name}</strong>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50 gap-2">
+                <span className="text-slate-400">Name</span>
+                <strong className="text-slate-800 truncate">{user.name}</strong>
               </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-50">
-                <span className="text-slate-400">{isUrdu ? "عمر و جنس" : "Age/Gender"}</span>
+              <div className="flex justify-between items-center py-1 border-b border-slate-50 gap-2">
+                <span className="text-slate-400">Age / Gender</span>
                 <strong className="text-slate-800">
                   {profile?.age ? `${profile.age} yrs` : "N/A"} • {profile?.gender || "Male"}
                 </strong>
               </div>
               <div className="py-1 border-b border-slate-50 space-y-1">
-                <span className="text-slate-400 block">{isUrdu ? "دائمی بیماریاں" : "Conditions"}</span>
+                <span className="text-slate-400 block">Conditions</span>
                 <div className="flex flex-wrap gap-1">
                   {profile?.conditions && profile.conditions.length > 0 ? (
                     profile.conditions.map((c, i) => (
@@ -555,7 +523,7 @@ export default function TriagePage() {
                 </div>
               </div>
               <div className="py-1 space-y-1">
-                <span className="text-red-500 font-semibold block">{isUrdu ? "معلوم الرجیز" : "Allergies"}</span>
+                <span className="text-red-500 font-semibold block">Allergies</span>
                 <div className="flex flex-wrap gap-1">
                   {profile?.allergies && profile.allergies.length > 0 ? (
                     profile.allergies.map((a, i) => (
@@ -574,14 +542,14 @@ export default function TriagePage() {
           {/* Safety & Emergency Hotlines Card */}
           <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-red-50/70 to-rose-50/40 border border-red-200 shadow-2xs space-y-3">
             <div className="flex items-center gap-2 text-red-900 font-bold text-xs uppercase tracking-wider">
-              <PhoneCall className="w-4 h-4 text-red-600" />
-              <span>{isUrdu ? "ہنگامی ہیلپ لائنز (پاکستان)" : "Emergency Helplines"}</span>
+              <PhoneCall className="w-4 h-4 text-red-600 shrink-0" />
+              <span>Emergency Helplines</span>
             </div>
 
             <div className="space-y-2 text-xs">
               <a
                 href="tel:1122"
-                className="flex items-center justify-between p-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all shadow-xs"
+                className="flex items-center justify-between p-2.5 min-h-[44px] rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all shadow-xs"
               >
                 <span>Rescue 1122 Ambulance</span>
                 <span className="text-xs bg-white/20 px-2 py-0.5 rounded">Dial 1122</span>
@@ -589,10 +557,10 @@ export default function TriagePage() {
 
               <a
                 href="tel:03174288665"
-                className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-red-200 text-red-900 hover:bg-red-50 font-semibold transition-all shadow-2xs"
+                className="flex items-center justify-between p-2.5 min-h-[44px] rounded-xl bg-white border border-red-200 text-red-900 hover:bg-red-50 font-semibold transition-all shadow-2xs"
               >
                 <div className="flex items-center gap-1.5">
-                  <HeartHandshake className="w-4 h-4 text-red-600" />
+                  <HeartHandshake className="w-4 h-4 text-red-600 shrink-0" />
                   <span>Umang Crisis Line</span>
                 </div>
                 <span className="text-[11px] font-mono text-red-700">0317-4288665</span>
@@ -603,14 +571,15 @@ export default function TriagePage() {
           {/* Common Scenario Chips */}
           <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
-              {t("triage_starter_label")}
+              Quick Symptom Scenarios
             </span>
             <div className="flex flex-col gap-2">
               {starterChips.map((chip, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={() => handleSendMessage(chip.value)}
-                  className="text-left p-2.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-teal-50 hover:border-teal-300 text-xs text-slate-700 hover:text-teal-900 transition-all shadow-2xs flex items-center justify-between group active:scale-98"
+                  className="text-left p-2.5 min-h-[42px] rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-teal-50 hover:border-teal-300 text-xs text-slate-700 hover:text-teal-900 transition-all shadow-2xs flex items-center justify-between group"
                 >
                   <span className="font-semibold line-clamp-1">{chip.label}</span>
                   <Sparkles className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 shrink-0 ml-1.5" />
@@ -620,9 +589,8 @@ export default function TriagePage() {
           </div>
         </aside>
 
-        {/* Right Live Triage Chat Area (8 Columns on Desktop) */}
-        <div className="lg:col-span-8 space-y-4">
-          {/* FEATURE 1 & Safety Guardrail: Emergency / Urgent / Mental Health Banner */}
+        {/* Live Triage Chat Area */}
+        <div className="order-1 lg:order-2 lg:col-span-8 space-y-4 min-w-0">
           {isEmergencyOrUrgent ? (
             <div className="animate-in fade-in slide-in-from-top-3 duration-300">
               <EmergencyBanner
@@ -637,8 +605,7 @@ export default function TriagePage() {
           ) : null}
 
           {/* Chat Window Container */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[68vh] min-h-[480px] max-h-[750px] overflow-hidden">
-            {/* Messages Scroll Area with guaranteed bottom clearance */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-[calc(100dvh-14rem)] min-h-[360px] max-h-[760px] overflow-hidden">
             <div
               ref={scrollContainerRef}
               className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50/40"
@@ -650,12 +617,10 @@ export default function TriagePage() {
                   </div>
                   <div className="space-y-1.5">
                     <h3 className="text-base font-bold text-slate-800">
-                      {isUrdu ? "طبیب کیئر سے اپنی علامات شیئر کریں" : "Describe Your Symptoms"}
+                      Describe Your Symptoms
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                      {isUrdu
-                        ? "اردو، انگریزی یا رومن اردو میں اپنی علامات بتائیں۔ سسٹم ڈبلیو ایچ او پروٹوکول کے مطابق خطرے کا فوری تعین کرے گا۔"
-                        : "Type or speak in Urdu or English. The AI cross-references WHO-inspired clinical protocols with your health profile to assess urgency."}
+                      Type or dictate your symptoms below. TabeebCare cross-references clinical triage protocols with your saved health profile to assess urgency.
                     </p>
                   </div>
                 </div>
@@ -666,7 +631,6 @@ export default function TriagePage() {
                       key={i}
                       role={msg.role}
                       content={msg.content}
-                      lang={lang}
                       onOpenExplain={() => setIsExplainOpen(true)}
                     />
                   ))}
@@ -674,19 +638,18 @@ export default function TriagePage() {
                   {isStreaming && (
                     <div className="flex items-center gap-2 text-xs text-teal-700 font-semibold p-2">
                       <div className="w-2 h-2 rounded-full bg-teal-600 animate-ping" />
-                      <span>{isUrdu ? "طبیب کیئر تجزیہ کر رہا ہے..." : "TabeebCare AI is analyzing symptoms..."}</span>
+                      <span>TabeebCare AI is analyzing symptoms...</span>
                     </div>
                   )}
 
-                  {/* Guaranteed clearance space above the input bar */}
-                  <div className="h-14 shrink-0 pointer-events-none" aria-hidden="true" />
+                  <div className="h-8 shrink-0 pointer-events-none" aria-hidden="true" />
                   <div ref={messagesEndRef} className="h-1 shrink-0" />
                 </>
               )}
             </div>
 
             {/* Input Bar with VoiceButton */}
-            <div className="p-3.5 sm:p-4 bg-white border-t border-slate-200 shrink-0">
+            <div className="p-3 sm:p-4 bg-white border-t border-slate-200 shrink-0">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -694,12 +657,10 @@ export default function TriagePage() {
                 }}
                 className="flex items-center gap-2"
               >
-                {/* FEATURE 3: Voice input button */}
                 <VoiceButton
                   onTranscript={(spoken) => {
                     setInputMessage((prev) => (prev ? `${prev} ${spoken}` : spoken));
                   }}
-                  defaultLang={isUrdu ? "ur-PK" : "en-US"}
                 />
 
                 <input
@@ -707,18 +668,18 @@ export default function TriagePage() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   disabled={isStreaming}
-                  placeholder={t("triage_input_placeholder")}
-                  className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-colors"
+                  placeholder="Describe your symptoms, duration, and severity..."
+                  className="flex-1 min-w-0 min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-colors"
                 />
 
                 <Button
                   type="submit"
                   disabled={!inputMessage.trim() || isStreaming}
                   isLoading={isStreaming}
-                  className="px-5 sm:px-7 py-3 font-bold gap-1.5 shadow-sm"
+                  className="px-4 sm:px-6 min-h-[44px] font-bold gap-1.5 shadow-sm shrink-0"
                 >
                   <Send className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t("triage_btn_send")}</span>
+                  <span className="hidden sm:inline">Send</span>
                 </Button>
               </form>
             </div>
@@ -726,7 +687,7 @@ export default function TriagePage() {
         </div>
       </div>
 
-      {/* SBAR Card Modal (Synthesized Multi-Question Report) */}
+      {/* SBAR Card Modal */}
       <SbarCard
         isOpen={isSbarOpen}
         onClose={() => setIsSbarOpen(false)}
@@ -752,7 +713,7 @@ export default function TriagePage() {
         hasAttachedLabReport={!!attachedLabSummary}
       />
 
-      {/* Real Image Upload & Lab Report OCR Analyzer Modal */}
+      {/* Lab Report OCR Analyzer Modal */}
       <MedicalReportScanner
         isOpen={isReportScannerOpen}
         onClose={() => setIsReportScannerOpen(false)}
@@ -761,7 +722,7 @@ export default function TriagePage() {
         }}
       />
 
-      {/* FEATURE 2: Explainability Modal */}
+      {/* Explainability Modal */}
       <ExplainabilityModal
         isOpen={isExplainOpen}
         onClose={() => setIsExplainOpen(false)}

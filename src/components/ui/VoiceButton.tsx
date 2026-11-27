@@ -7,7 +7,6 @@ import clsx from "clsx";
 interface VoiceButtonProps {
   onTranscript: (text: string) => void;
   className?: string;
-  defaultLang?: "ur-PK" | "en-US";
 }
 
 declare global {
@@ -22,12 +21,10 @@ type VoiceMode = "whisper" | "webspeech" | "none";
 export function VoiceButton({
   onTranscript,
   className,
-  defaultLang = "ur-PK",
 }: VoiceButtonProps) {
   const [mode, setMode] = useState<VoiceMode>("none");
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const [voiceLang, setVoiceLang] = useState<"ur-PK" | "en-US">(defaultLang);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -35,13 +32,6 @@ export function VoiceButton({
   const streamRef = useRef<MediaStream | null>(null);
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recognitionRef = useRef<any>(null);
-
-  // Keep dictation language synced when page language changes (unless actively recording)
-  useEffect(() => {
-    if (!isListening && !isTranscribing) {
-      setVoiceLang(defaultLang);
-    }
-  }, [defaultLang, isListening, isTranscribing]);
 
   // Detect browser voice capabilities — prefer universal MediaRecorder + Groq Whisper
   useEffect(() => {
@@ -67,14 +57,12 @@ export function VoiceButton({
     setMode("none");
   }, []);
 
-  // Auto-clear transient error hints
   useEffect(() => {
     if (!errorMsg) return;
     const t = setTimeout(() => setErrorMsg(null), 4000);
     return () => clearTimeout(t);
   }, [errorMsg]);
 
-  // Clean up media tracks & timers on unmount
   useEffect(() => {
     return () => {
       if (autoStopTimerRef.current) clearTimeout(autoStopTimerRef.current);
@@ -102,13 +90,13 @@ export function VoiceButton({
     }
   };
 
-  const transcribeAudioBlob = async (blob: Blob, lang: "ur-PK" | "en-US") => {
+  const transcribeAudioBlob = async (blob: Blob) => {
     setIsTranscribing(true);
     setErrorMsg(null);
     try {
       const formData = new FormData();
       formData.append("file", blob, "recording.webm");
-      formData.append("lang", lang);
+      formData.append("lang", "en-US");
 
       const res = await fetch("/api/transcribe", {
         method: "POST",
@@ -123,15 +111,11 @@ export function VoiceButton({
       if (data.text && data.text.trim()) {
         onTranscript(data.text.trim());
       } else {
-        setErrorMsg(lang === "ur-PK" ? "آواز سنائی نہیں دی" : "No speech detected");
+        setErrorMsg("No speech detected");
       }
     } catch (err) {
       console.warn("Whisper transcription error:", err);
-      setErrorMsg(
-        lang === "ur-PK"
-          ? "آواز سمجھنے میں مسئلہ آیا"
-          : "Could not transcribe audio"
-      );
+      setErrorMsg("Could not transcribe audio");
     } finally {
       setIsTranscribing(false);
     }
@@ -155,7 +139,6 @@ export function VoiceButton({
       streamRef.current = stream;
       audioChunksRef.current = [];
 
-      // Choose a supported MIME type across Chrome, Firefox, Edge, Safari
       const preferredTypes = [
         "audio/webm;codecs=opus",
         "audio/webm",
@@ -171,8 +154,6 @@ export function VoiceButton({
         ? new MediaRecorder(stream, { mimeType: chosenMime })
         : new MediaRecorder(stream);
 
-      const activeLang = voiceLang;
-
       recorder.ondataavailable = (event: BlobEvent) => {
         if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
@@ -187,21 +168,20 @@ export function VoiceButton({
         audioChunksRef.current = [];
 
         if (audioBlob.size > 0) {
-          void transcribeAudioBlob(audioBlob, activeLang);
+          void transcribeAudioBlob(audioBlob);
         }
       };
 
       recorder.onerror = () => {
         stopMediaTracks();
         setIsListening(false);
-        setErrorMsg(activeLang === "ur-PK" ? "ریکارڈنگ ناکام ہو گئی" : "Recording error");
+        setErrorMsg("Recording error");
       };
 
       mediaRecorderRef.current = recorder;
       recorder.start();
       setIsListening(true);
 
-      // Safety cap: stop automatically after 30s
       autoStopTimerRef.current = setTimeout(() => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
           mediaRecorderRef.current.stop();
@@ -211,11 +191,7 @@ export function VoiceButton({
       stopMediaTracks();
       setIsListening(false);
       console.warn("Microphone access error:", err);
-      setErrorMsg(
-        voiceLang === "ur-PK"
-          ? "مائیکروفون کی اجازت دیں"
-          : "Allow microphone access"
-      );
+      setErrorMsg("Allow microphone access");
     }
   };
 
@@ -232,7 +208,7 @@ export function VoiceButton({
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
-      recognition.lang = voiceLang;
+      recognition.lang = "en-US";
       recognition.continuous = false;
       recognition.interimResults = false;
 
@@ -243,7 +219,7 @@ export function VoiceButton({
       };
       recognition.onerror = () => {
         setIsListening(false);
-        setErrorMsg(voiceLang === "ur-PK" ? "آواز ریکارڈ نہیں ہو سکی" : "Voice input failed");
+        setErrorMsg("Voice input failed");
       };
       recognition.onend = () => setIsListening(false);
 
@@ -262,38 +238,12 @@ export function VoiceButton({
     }
   };
 
-  const toggleVoiceLang = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const nextLang = voiceLang === "ur-PK" ? "en-US" : "ur-PK";
-    setVoiceLang(nextLang);
-    if (isListening) {
-      if (mode === "whisper" && mediaRecorderRef.current?.state === "recording") {
-        mediaRecorderRef.current.stop();
-      } else if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsListening(false);
-    }
-  };
-
   if (mode === "none") {
     return null;
   }
 
   return (
-    <div className={clsx("relative inline-flex items-center gap-1", className)}>
-      {/* Language Switcher for Mic */}
-      <button
-        type="button"
-        onClick={toggleVoiceLang}
-        disabled={isTranscribing}
-        title={`Dictation Language: ${voiceLang === "ur-PK" ? "Urdu (ur-PK)" : "English (en-US)"}`}
-        className="text-[10px] font-bold px-1.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition-colors disabled:opacity-50"
-      >
-        {voiceLang === "ur-PK" ? "اردو" : "EN"}
-      </button>
-
-      {/* Mic Button */}
+    <div className={clsx("relative inline-flex items-center", className)}>
       <button
         type="button"
         onClick={handleMicClick}
@@ -310,10 +260,10 @@ export function VoiceButton({
             ? "Transcribing with Groq Whisper..."
             : isListening
             ? "Recording... Click to stop & transcribe"
-            : `Speak in ${voiceLang === "ur-PK" ? "Urdu" : "English"} (Click to start, click again to stop)`
+            : "Voice dictation (Click to start, click again to stop)"
         }
         className={clsx(
-          "p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 shadow-2xs",
+          "min-w-[44px] min-h-[44px] p-2.5 rounded-xl transition-all flex items-center justify-center shrink-0 shadow-2xs",
           isTranscribing
             ? "bg-teal-100 text-teal-700 border border-teal-300 cursor-wait"
             : isListening
@@ -330,7 +280,6 @@ export function VoiceButton({
         )}
       </button>
 
-      {/* Brief floating status / error hint */}
       {errorMsg && (
         <span className="absolute -top-9 left-0 whitespace-nowrap text-[11px] font-semibold bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 rounded-lg shadow-sm z-20">
           {errorMsg}

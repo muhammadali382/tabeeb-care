@@ -86,7 +86,7 @@ ${profileContext}
 ${reportText.trim().slice(0, 4000)}
 """
 
-Analyze all lab values and findings above, classify each marker as high, low, or normal against standard ranges, explain them clearly in simple English and Urdu, and note any important connections to the patient's chronic conditions or medications.`;
+Analyze all lab values and findings above, classify each marker as high, low, or normal against standard ranges, explain them clearly in simple English, and note any important connections to the patient's chronic conditions or medications.`;
 
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,

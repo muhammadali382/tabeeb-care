@@ -9,7 +9,7 @@ export interface MedicineData {
   name: string;
   generic: string;
   purpose: string;
-  purpose_urdu: string;
+  purpose_urdu?: string;
   schedule: {
     morning: boolean;
     afternoon: boolean;
@@ -17,7 +17,7 @@ export interface MedicineData {
     night: boolean;
   };
   food_instruction: string;
-  food_instruction_urdu: string;
+  food_instruction_urdu?: string;
   warnings?: string[];
   allergy_conflict?: boolean;
   allergy_message?: string | null;
@@ -25,27 +25,22 @@ export interface MedicineData {
 
 interface MedicineCardProps {
   med: MedicineData;
-  lang?: "en" | "ur";
 }
 
-export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
-  const isUrdu = lang === "ur";
-
+export function MedicineCard({ med }: MedicineCardProps) {
   const scheduleSlots = [
-    { key: "morning", label: "Morning", labelUrdu: "صبح", icon: Sunrise, active: med.schedule?.morning },
-    { key: "afternoon", label: "Afternoon", labelUrdu: "دوپہر", icon: Sun, active: med.schedule?.afternoon },
-    { key: "evening", label: "Evening", labelUrdu: "شام", icon: Sunset, active: med.schedule?.evening },
-    { key: "night", label: "Night", labelUrdu: "رات", icon: Moon, active: med.schedule?.night },
+    { key: "morning", label: "Morning", icon: Sunrise, active: med.schedule?.morning },
+    { key: "afternoon", label: "Afternoon", icon: Sun, active: med.schedule?.afternoon },
+    { key: "evening", label: "Evening", icon: Sunset, active: med.schedule?.evening },
+    { key: "night", label: "Night", icon: Moon, active: med.schedule?.night },
   ];
 
   const activeTimes = scheduleSlots
     .filter((s) => s.active)
-    .map((s) => (isUrdu ? s.labelUrdu : s.label))
+    .map((s) => s.label)
     .join(", ");
 
-  const readoutText = isUrdu
-    ? `${med.name}. ${med.purpose_urdu || med.purpose}. ${activeTimes ? `اوقات: ${activeTimes}.` : ""} ${med.food_instruction_urdu || med.food_instruction || ""} ${med.allergy_conflict && med.allergy_message ? `الرجی کا خطرہ: ${med.allergy_message}` : ""}`.trim()
-    : `${med.name}. ${med.purpose}. ${activeTimes ? `Schedule: ${activeTimes}.` : ""} ${med.food_instruction || ""} ${med.allergy_conflict && med.allergy_message ? `Allergy warning: ${med.allergy_message}` : ""}`.trim();
+  const readoutText = `${med.name}. ${med.purpose}. ${activeTimes ? `Schedule: ${activeTimes}.` : ""} ${med.food_instruction || ""} ${med.allergy_conflict && med.allergy_message ? `Allergy warning: ${med.allergy_message}` : ""}`.trim();
 
   return (
     <div
@@ -62,11 +57,11 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
           <div className="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
           </div>
-          <div className="space-y-1 text-xs sm:text-sm">
+          <div className="space-y-1 text-xs sm:text-sm min-w-0">
             <strong className="font-extrabold text-red-900 block tracking-tight">
-              🚨 ALLERGY CONFLICT WARNING (الرجی کا خطرہ)
+              ALLERGY CONFLICT WARNING
             </strong>
-            <p className="leading-relaxed text-red-800">
+            <p className="leading-relaxed text-red-800 break-words">
               {med.allergy_message ||
                 "This medication conflicts with your recorded health profile allergies. Do not take without consulting your physician."}
             </p>
@@ -76,7 +71,7 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
 
       {/* Header: Medication Name, Generic, & Clinical Purpose */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-        <div className="flex items-start sm:items-center gap-3">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
           <div
             className={clsx(
               "w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 shadow-2xs",
@@ -87,40 +82,40 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
           >
             <Pill className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="space-y-0.5">
-            <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+          <div className="space-y-0.5 min-w-0">
+            <h4 className="text-base sm:text-lg font-bold text-slate-900 leading-tight break-words">
               {med.name}
             </h4>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-500 font-medium break-words">
               <span className="font-semibold text-slate-600">Generic:</span> {med.generic || "Active Ingredient"}
             </p>
           </div>
         </div>
 
         {/* Clinical Purpose Badge */}
-        <div className="self-start sm:self-center">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-800 bg-teal-50/90 border border-teal-200/90 px-3 py-1 rounded-lg">
+        <div className="self-start sm:self-center max-w-full">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-800 bg-teal-50/90 border border-teal-200/90 px-3 py-1 rounded-lg break-words">
             <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-            <span>{isUrdu && med.purpose_urdu ? med.purpose_urdu : med.purpose}</span>
+            <span>{med.purpose}</span>
           </span>
         </div>
       </div>
 
       {/* 24-Hour Routine Schedule */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
-          <span>{isUrdu ? "روزانہ کی خوراک کا وقت" : "24-Hour Routine Schedule"}</span>
+        <div className="flex flex-wrap items-center justify-between gap-1 text-xs font-bold uppercase tracking-wider text-slate-500">
+          <span>24-Hour Routine Schedule</span>
           <span className="text-[11px] font-normal normal-case text-slate-400">
-            {isUrdu ? "سبز رنگ مطلوبہ وقت کو ظاہر کرتا ہے" : "Highlighted slots indicate prescribed doses"}
+            Highlighted slots indicate prescribed doses
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {scheduleSlots.map(({ key, label, labelUrdu, icon: Icon, active }) => (
+          {scheduleSlots.map(({ key, label, icon: Icon, active }) => (
             <div
               key={key}
               className={clsx(
-                "flex items-center gap-2.5 p-3 rounded-xl border text-xs transition-all",
+                "flex items-center gap-2.5 p-3 rounded-xl border text-xs transition-all min-w-0",
                 active
                   ? "bg-teal-50/90 border-teal-400 text-teal-900 shadow-xs font-bold"
                   : "bg-slate-50/60 border-slate-200 text-slate-400 opacity-60"
@@ -134,10 +129,10 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <div className="flex flex-col leading-tight">
-                <span className="font-bold">{isUrdu ? labelUrdu : label}</span>
+              <div className="flex flex-col leading-tight min-w-0">
+                <span className="font-bold truncate">{label}</span>
                 <span className="text-[10px] font-medium opacity-80">
-                  {active ? (isUrdu ? "دوا لیں" : "Take Dose") : (isUrdu ? "نہیں لینا" : "Skip")}
+                  {active ? "Take Dose" : "Skip"}
                 </span>
               </div>
             </div>
@@ -147,25 +142,21 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
 
       {/* Food Intake & Safety Precautions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-        {/* Food Instructions */}
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs text-slate-700">
           <div className="flex items-center gap-1.5 font-bold text-slate-900">
-            <Utensils className="w-4 h-4 text-teal-600" />
-            <span>{isUrdu ? "کھانے کے ساتھ ہدایات" : "Food & Diet Instruction"}</span>
+            <Utensils className="w-4 h-4 text-teal-600 shrink-0" />
+            <span>Food &amp; Diet Instruction</span>
           </div>
           <p className="leading-relaxed">
-            {isUrdu && med.food_instruction_urdu
-              ? med.food_instruction_urdu
-              : med.food_instruction || "Take as directed by doctor."}
+            {med.food_instruction || "Take as directed by your physician."}
           </p>
         </div>
 
-        {/* Warnings & Precautions */}
         {med.warnings && med.warnings.length > 0 && (
           <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/80 space-y-1.5 text-xs text-amber-900">
             <div className="flex items-center gap-1.5 font-bold text-amber-900">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-              <span>{isUrdu ? "اہم احتیاطی تدابیر" : "Precautions & Safety"}</span>
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Precautions &amp; Safety</span>
             </div>
             <ul className="space-y-1 list-disc list-inside leading-relaxed text-amber-800">
               {med.warnings.map((warn, i) => (
@@ -183,10 +174,10 @@ export function MedicineCard({ med, lang = "en" }: MedicineCardProps) {
           href="https://www.google.com/maps/search/pharmacy+near+me"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 text-slate-700 hover:text-teal-800 text-xs font-semibold transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 text-slate-700 hover:text-teal-800 text-xs font-semibold transition-colors"
         >
           <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-          <span>{isUrdu ? "قریبی فارمیسی تلاش کریں" : "Find at Nearest Pharmacy"}</span>
+          <span>Find Nearest Pharmacy</span>
         </a>
       </div>
     </div>

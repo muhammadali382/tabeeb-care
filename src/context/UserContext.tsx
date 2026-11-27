@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { Language, translations, TranslationDictionary } from "@/lib/i18n/translations";
 
 export interface User {
   id: number;
@@ -22,9 +21,6 @@ interface UserContextType {
   user: User | null;
   profile: HealthProfile | null;
   isLoading: boolean;
-  lang: Language;
-  setLang: (lang: Language) => void;
-  t: (key: keyof TranslationDictionary) => string;
   login: (user: User, profile?: HealthProfile) => void;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -35,42 +31,11 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = "tabibcare_user";
 const PROFILE_STORAGE_KEY = "tabibcare_profile";
-const LANG_STORAGE_KEY = "tabibcare_lang";
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<HealthProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [lang, setLangState] = useState<Language>("en");
-
-  // Synchronize document dir and lang attributes
-  const applyLanguageAttributes = useCallback((language: Language) => {
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = language;
-      document.documentElement.dir = language === "ur" ? "rtl" : "ltr";
-      if (language === "ur") {
-        document.body.classList.add("lang-ur");
-      } else {
-        document.body.classList.remove("lang-ur");
-      }
-    }
-  }, []);
-
-  const setLang = (newLang: Language) => {
-    setLangState(newLang);
-    applyLanguageAttributes(newLang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LANG_STORAGE_KEY, newLang);
-    }
-  };
-
-  const t = useCallback(
-    (key: keyof TranslationDictionary): string => {
-      const dict = translations[lang] || translations.en;
-      return dict[key] || translations.en[key] || String(key);
-    },
-    [lang]
-  );
 
   const persistProfileLocally = (nextProfile: HealthProfile | null) => {
     if (typeof window === "undefined") return;
@@ -123,12 +88,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     const initializeSession = async () => {
       try {
-        const savedLang = localStorage.getItem(LANG_STORAGE_KEY) as Language | null;
-        if (savedLang === "en" || savedLang === "ur") {
-          setLangState(savedLang);
-          applyLanguageAttributes(savedLang);
-        } else {
-          applyLanguageAttributes("en");
+        if (typeof document !== "undefined") {
+          document.documentElement.lang = "en";
+          document.documentElement.dir = "ltr";
         }
 
         // Verify signed HttpOnly session cookie with server
@@ -158,13 +120,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem(PROFILE_STORAGE_KEY);
           }
         } else if (res.status === 401) {
-          // Clear stale client cache when no valid server session exists
           setUser(null);
           setProfile(null);
           localStorage.removeItem(LOCAL_STORAGE_KEY);
           localStorage.removeItem(PROFILE_STORAGE_KEY);
         } else {
-          // Transient server/network issue: fallback to cached session if available
           const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
           if (stored) {
             const parsedUser = JSON.parse(stored) as User;
@@ -199,7 +159,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [applyLanguageAttributes]);
+  }, []);
 
   const login = (newUser: User, initialProfile?: HealthProfile) => {
     setUser(newUser);
@@ -277,9 +237,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         user,
         profile,
         isLoading,
-        lang,
-        setLang,
-        t,
         login,
         logout,
         refreshProfile,
